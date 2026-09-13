@@ -404,11 +404,10 @@ export default function SettingsForms({
 
             <div>
               <label htmlFor="chatModel" className="block text-sm font-medium text-slate-700 mb-2">
-                Chat / merge model
+                Chat / merge model (required)
               </label>
               <p className="text-xs text-slate-500 mb-2">
-                Must support chat completions (e.g. gpt-4o-mini). Instruct and legacy completion
-                models are not supported.
+                Must support chat completions. MemoryOS does not auto-select a paid model.
               </p>
               {selfHosted ? (
                 <ModelTextInput
@@ -425,8 +424,10 @@ export default function SettingsForms({
                   name="chatModel"
                   value={chatModel}
                   onChange={(e) => setChatModel(e.target.value)}
+                  required
                   className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-slate-900 focus:border-transparent text-sm text-slate-900 bg-white font-mono"
                 >
+                  <option value="">Select a chat model…</option>
                   {ensureSelected(chatOptions, chatModel, 'chat').map((m) => (
                     <option key={m.id} value={m.id}>
                       {m.id}
@@ -438,11 +439,10 @@ export default function SettingsForms({
 
             <div>
               <label htmlFor="visionModel" className="block text-sm font-medium text-slate-700 mb-2">
-                Vision model (macOS capture)
+                Vision model (macOS capture, required)
               </label>
               <p className="text-xs text-slate-500 mb-2">
-                Must support image input (e.g. gpt-4o-mini). Plain gpt-4 and gpt-3.5 cannot read
-                screenshots.
+                Must support image input for screen capture. No silent gpt-4o-mini fallback.
               </p>
               {selfHosted ? (
                 <ModelTextInput
@@ -459,8 +459,10 @@ export default function SettingsForms({
                   name="visionModel"
                   value={visionModel}
                   onChange={(e) => setVisionModel(e.target.value)}
+                  required
                   className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-slate-900 focus:border-transparent text-sm text-slate-900 bg-white font-mono"
                 >
+                  <option value="">Select a vision model…</option>
                   {ensureSelected(
                     visionOptions.length ? visionOptions : chatOptions,
                     visionModel,

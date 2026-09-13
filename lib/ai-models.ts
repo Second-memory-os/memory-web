@@ -43,6 +43,35 @@ export const OPENAI_API_BASE = 'https://api.openai.com/v1';
 
 export const DEFAULT_MODELS_BY_PROVIDER: Record<AiProvider, AiModelPrefs> = {
   openrouter: {
+    chatModel: '',
+    visionModel: '',
+    embeddingModel: FIXED_EMBEDDING_MODELS.openrouter,
+  },
+  openai: {
+    chatModel: '',
+    visionModel: '',
+    embeddingModel: FIXED_EMBEDDING_MODELS.openai,
+  },
+  nvidia: {
+    chatModel: '',
+    visionModel: '',
+    embeddingModel: FIXED_EMBEDDING_MODELS.nvidia,
+  },
+  ollama: {
+    chatModel: '',
+    visionModel: '',
+    embeddingModel: FIXED_EMBEDDING_MODELS.ollama,
+  },
+  custom: {
+    chatModel: '',
+    visionModel: '',
+    embeddingModel: '',
+  },
+};
+
+/** Suggested models for UI placeholders only — never auto-applied. */
+export const SUGGESTED_MODELS_BY_PROVIDER: Record<AiProvider, AiModelPrefs> = {
+  openrouter: {
     chatModel: 'openai/gpt-4o-mini',
     visionModel: 'openai/gpt-4o-mini',
     embeddingModel: FIXED_EMBEDDING_MODELS.openrouter,
@@ -351,23 +380,21 @@ export function resolveAiModels(
   provider: AiProvider = 'openrouter'
 ): AiModelPrefs {
   const defaults = DEFAULT_MODELS_BY_PROVIDER[provider];
-  let chatModel = partial?.chatModel?.trim() || defaults.chatModel;
-  let visionModel = partial?.visionModel?.trim() || defaults.visionModel;
+  // Never invent a paid chat/vision model — only use what the user saved.
+  let chatModel = partial?.chatModel?.trim() || '';
+  let visionModel = partial?.visionModel?.trim() || '';
   let embeddingModel = partial?.embeddingModel?.trim() || defaults.embeddingModel;
 
-  // Self-hosted model tags are arbitrary; only the user knows what is installed.
   if (isSelfHostedProvider(provider)) {
     return { chatModel, visionModel, embeddingModel };
   }
 
   if (provider === 'openai') {
-    if (!isOpenAiChatModel(chatModel)) chatModel = defaults.chatModel;
-    if (!isOpenAiVisionModel(visionModel)) {
-      visionModel = isOpenAiVisionModel(defaults.visionModel)
-        ? defaults.visionModel
-        : 'gpt-4o-mini';
+    if (chatModel && !isOpenAiChatModel(chatModel)) chatModel = '';
+    if (visionModel && !isOpenAiVisionModel(visionModel)) visionModel = '';
+    if (embeddingModel && !isOpenAiEmbeddingModel(embeddingModel)) {
+      embeddingModel = defaults.embeddingModel;
     }
-    if (!isOpenAiEmbeddingModel(embeddingModel)) embeddingModel = defaults.embeddingModel;
   }
 
   return { chatModel, visionModel, embeddingModel };

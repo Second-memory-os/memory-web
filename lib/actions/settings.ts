@@ -269,8 +269,8 @@ export async function saveOpenaiKey(
     const providerHint = String(formData.get('aiProvider') ?? '').trim() as AiProvider;
     const selfHosted = isSelfHostedProvider(providerHint);
     const defaults = DEFAULT_MODELS_BY_PROVIDER[providerHint] || DEFAULT_MODELS_BY_PROVIDER.openrouter;
-    let chatModel = String(formData.get('chatModel') ?? '').trim() || defaults.chatModel;
-    let visionModel = String(formData.get('visionModel') ?? '').trim() || defaults.visionModel;
+    let chatModel = String(formData.get('chatModel') ?? '').trim();
+    let visionModel = String(formData.get('visionModel') ?? '').trim();
     // Fixed per hosted provider so stored vectors stay comparable; only a
     // self-hosted user picks this, since we cannot know what they installed.
     let embeddingModel = selfHosted
@@ -283,12 +283,16 @@ export async function saveOpenaiKey(
       ? normalizeBaseUrl(String(formData.get('aiBaseUrl') ?? ''), resolvedProvider)
       : null;
 
+    if (!chatModel) {
+      return { error: 'Choose a chat model before saving. MemoryOS does not pick a default paid model.' };
+    }
+    if (!visionModel) {
+      return { error: 'Choose a vision model before saving. MemoryOS does not pick a default paid model.' };
+    }
+
     if (selfHosted) {
       if (!baseUrl) {
         return { error: 'Endpoint URL is required for a self-hosted provider' };
-      }
-      if (!chatModel) {
-        return { error: 'Enter the chat model name as it appears on your endpoint' };
       }
       if (!embeddingModel) {
         return { error: 'Enter the embedding model name as it appears on your endpoint' };
