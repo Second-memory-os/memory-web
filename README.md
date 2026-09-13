@@ -1,36 +1,120 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# MemoryOS Web
 
-## Getting Started
+Frontend web application for MemoryOS - marketing site, authentication, dashboard, and settings.
 
-First, run the development server:
+## Features
+
+- Landing page with product overview
+- Authentication (Google, GitHub, Email via NextAuth)
+- Dashboard with memory timeline
+- Settings for database connection and AI configuration
+- MCP configuration generator
+- Billing integration (Stripe)
+
+## Tech Stack
+
+- Next.js 15 (App Router)
+- TypeScript
+- Tailwind CSS
+- NextAuth.js
+- Stripe
+
+## Setup
+
+1. Install dependencies:
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+pnpm install
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+2. Copy environment variables:
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```bash
+cp .env.example .env.local
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+3. Configure `.env.local`:
 
-## Learn More
+```env
+AUTH_SECRET=your-secret-key
+NEXTAUTH_URL=http://localhost:3000
 
-To learn more about Next.js, take a look at the following resources:
+GOOGLE_CLIENT_ID=your-google-client-id
+GOOGLE_CLIENT_SECRET=your-google-client-secret
+GITHUB_CLIENT_ID=your-github-client-id
+GITHUB_CLIENT_SECRET=your-github-client-secret
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+DATABASE_URL=postgresql://user:password@localhost:5432/memoryos_auth
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+NEXT_PUBLIC_API_URL=http://localhost:3001
 
-## Deploy on Vercel
+NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=pk_test_xxx
+STRIPE_SECRET_KEY=sk_test_xxx
+```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+4. Run the development server:
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+```bash
+pnpm dev
+```
+
+5. Open [http://localhost:3000](http://localhost:3000)
+
+## Project Structure
+
+```
+app/
+├── (auth)/         # Authentication pages
+│   └── login/
+├── (dashboard)/    # Protected dashboard pages
+│   ├── dashboard/
+│   └── settings/
+├── api/            # API routes
+│   └── auth/
+├── pricing/        # Pricing page
+└── page.tsx        # Landing page
+```
+
+## OAuth Setup
+
+### Google OAuth
+
+1. Go to [Google Cloud Console](https://console.cloud.google.com/)
+2. Create a new project or select existing
+3. Enable Google+ API
+4. Create OAuth 2.0 credentials
+5. Add authorized redirect URI: `http://localhost:3000/api/auth/callback/google`
+
+### GitHub OAuth
+
+1. Go to GitHub Settings > Developer settings > OAuth Apps
+2. Create new OAuth App
+3. Authorization callback URL: `http://localhost:3000/api/auth/callback/github`
+
+## Stripe Setup
+
+1. Go to [Stripe Dashboard](https://dashboard.stripe.com/)
+2. Get your publishable and secret keys
+3. Set up webhook endpoint: `http://localhost:3000/api/webhooks/stripe`
+4. Configure products and prices in Stripe Dashboard
+
+## Development
+
+```bash
+# Run dev server
+pnpm dev
+
+# Build for production
+pnpm build
+
+# Start production server
+pnpm start
+
+# Lint
+pnpm lint
+```
+
+## License
+
+MIT
+# memory-web
