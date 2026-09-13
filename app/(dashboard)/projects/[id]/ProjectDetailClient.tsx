@@ -61,6 +61,18 @@ export interface HeartbeatData {
   needsAttention?: string | null;
 }
 
+export interface ProjectSnapshotData {
+  scannedAt?: string;
+  branch?: string;
+  dirty?: boolean;
+  recentCommits?: Array<{ sha?: string; message?: string; date?: string; author?: string }>;
+  github?: {
+    openPrs?: Array<{ number?: number; title?: string; updatedAt?: string }>;
+    checks?: Array<{ name?: string; conclusion?: string }>;
+  };
+  githubSkipped?: string;
+}
+
 const MOMENTUM_BADGES: Record<string, { label: string; bg: string; dot: string }> = {
   high: {
     label: 'High Momentum',
@@ -104,6 +116,8 @@ export default function ProjectDetailClient({ projectId }: { projectId: string }
   const [activities, setActivities] = useState<ActivityItem[]>([]);
   const [documents, setDocuments] = useState<DocumentItem[]>([]);
   const [heartbeat, setHeartbeat] = useState<HeartbeatData | null>(null);
+  const [snapshot, setSnapshot] = useState<ProjectSnapshotData | null>(null);
+  const [refreshing, setRefreshing] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -213,12 +227,28 @@ export default function ProjectDetailClient({ projectId }: { projectId: string }
       setActivities(data.activities || []);
       setDocuments(data.documents || []);
       setHeartbeat(data.heartbeat);
+      setSnapshot(data.snapshot?.data || null);
     } catch (err: any) {
       setError(err.message || 'Could not load project');
     } finally {
       setLoading(false);
     }
   }, [projectId]);
+
+  const handleRefreshRelation = async () => {
+    setRefreshing(true);
+    try {
+      const res = await fetch(`/api/projects/${projectId}/refresh`, { method: 'POST' });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error || 'Refresh failed');
+      setSnapshot(data.snapshot || null);
+      await loadProject();
+    } catch (err: any) {
+      setError(err.message || 'Could not refresh project status');
+    } finally {
+      setRefreshing(false);
+    }
+  };
 
   useEffect(() => {
     loadProject();
@@ -496,6 +526,75 @@ export default function ProjectDetailClient({ projectId }: { projectId: string }
                 </ul>
               ) : (
                 <p className="text-sm text-slate-400 italic">No priorities defined yet.</p>
+              )}
+            </div>
+
+            {/* Git / GitHub status (read-only) */}
+            <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-xs space-y-3">
+              <div className="flex items-center justify-between gap-3">
+                <h2 className="text-base font-bold text-slate-900 flex items-center gap-2">
+                  <svg className="w-5 h-5 text-slate-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
+                  </svg>
+                  Project status
+                </h2>
+                <button
+                  type="button"
+                  onClick={handleRefreshRelation}
+                  disabled={refreshing}
+                  className="text-xs font-semibold text-indigo-600 hover:text-indigo-800 disabled:opacity-50"
+                >
+                  {refreshing ? 'Scanning…' : 'Scan now'}
+                </button>
+              </div>
+              {snapshot ? (
+                <div className="space-y-3 text-sm text-slate-700">
+                  <div className="flex flex-wrap gap-3 text-xs text-slate-500">
+                    {snapshot.branch && (
+                      <span>
+                        Branch <span className="font-semibold text-slate-800">{snapshot.branch}</span>
+                      </span>
+                    )}
+                    {snapshot.dirty != null && (
+                      <span>{snapshot.dirty ? 'Working tree dirty' : 'Clean tree'}</span>
+                    )}
+                    {snapshot.scannedAt && (
+                      <span>Scanned {new Date(snapshot.scannedAt).toLocaleString()}</span>
+                    )}
+                    {snapshot.githubSkipped && (
+                      <span className="text-amber-700">GitHub skipped ({snapshot.githubSkipped})</span>
+                    )}
+                  </div>
+                  {snapshot.recentCommits && snapshot.recentCommits.length > 0 && (
+                    <div>
+                      <div className="text-xs font-semibold text-slate-500 mb-1">Recent commits</div>
+                      <ul className="space-y-1">
+                        {snapshot.recentCommits.slice(0, 6).map((c, i) => (
+                          <li key={`${c.sha}-${i}`} className="text-xs text-slate-700 truncate">
+                            <span className="font-mono text-slate-400">{c.sha?.slice(0, 7)}</span>{' '}
+                            {c.message}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                  {snapshot.github?.openPrs && snapshot.github.openPrs.length > 0 && (
+                    <div>
+                      <div className="text-xs font-semibold text-slate-500 mb-1">Open PRs</div>
+                      <ul className="space-y-1">
+                        {snapshot.github.openPrs.slice(0, 6).map((pr, i) => (
+                          <li key={`${pr.number}-${i}`} className="text-xs text-slate-700 truncate">
+                            #{pr.number} {pr.title}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <p className="text-sm text-slate-400 italic">
+                  No git/GitHub scan yet. Set a local folder or repo URL, then scan (hourly auto-scan in Local Core).
+                </p>
               )}
             </div>
 
