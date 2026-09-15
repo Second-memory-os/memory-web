@@ -181,8 +181,10 @@ export default function DashboardClient({ connectionReady }: { connectionReady: 
         <a
           href="/downloads/MemoryOS.dmg"
           download
-          className="font-semibold underline underline-offset-2 hover:text-sky-800"
+          className="inline-flex items-center gap-1.5 font-semibold underline underline-offset-2 hover:text-sky-800"
         >
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/brand/memoryos-icon.png" alt="" width={16} height={16} className="rounded-[3px]" />
           Download for Mac
         </a>
         , open it, sign in, and grant Screen Recording. Use the form below only for quick manual notes.

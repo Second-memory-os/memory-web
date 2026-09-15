@@ -101,8 +101,16 @@ export default function Home() {
               <a
                 href="/downloads/MemoryOS.dmg"
                 download
-                className="rounded-full bg-[var(--mkt-ink)] px-6 py-3 text-sm font-semibold text-white transition hover:bg-[var(--mkt-accent)]"
+                className="inline-flex items-center gap-2.5 rounded-full bg-[var(--mkt-ink)] px-6 py-3 text-sm font-semibold text-white transition hover:bg-[var(--mkt-accent)]"
               >
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src="/brand/memoryos-icon.png"
+                  alt=""
+                  width={22}
+                  height={22}
+                  className="rounded-[5px]"
+                />
                 Download for Mac
               </a>
               <Link
@@ -314,8 +322,16 @@ export default function Home() {
           <a
             href="/downloads/MemoryOS.dmg"
             download
-            className="shrink-0 rounded-full bg-white px-7 py-3.5 text-sm font-semibold text-[var(--mkt-ink)] transition hover:bg-[var(--mkt-accent-soft)]"
+            className="inline-flex shrink-0 items-center gap-2.5 rounded-full bg-white px-7 py-3.5 text-sm font-semibold text-[var(--mkt-ink)] transition hover:bg-[var(--mkt-accent-soft)]"
           >
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="/brand/memoryos-icon.png"
+              alt=""
+              width={22}
+              height={22}
+              className="rounded-[5px]"
+            />
             Download for Mac
           </a>
         </div>

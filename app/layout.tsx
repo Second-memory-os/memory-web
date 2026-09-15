@@ -19,6 +19,10 @@ export const metadata: Metadata = {
   },
   description:
     'MemoryOS captures your personal context on your Mac, finds open loops, and gives Claude, ChatGPT, and Cursor a private memory layer. Stored on your device — not in our cloud.',
+  icons: {
+    icon: [{ url: '/favicon-32.png', sizes: '32x32', type: 'image/png' }],
+    apple: [{ url: '/apple-touch-icon.png', sizes: '180x180', type: 'image/png' }],
+  },
 };
 
 export default function RootLayout({

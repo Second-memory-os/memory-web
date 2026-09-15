@@ -529,6 +529,15 @@ export default function SettingsForms({
           Install MemoryOS Desktop to capture active-window context. Sign-in opens this site, then
           returns via <code className="rounded bg-slate-100 px-1 text-slate-900">memoryos://</code>.
         </p>
+        <a
+          href="/downloads/MemoryOS.dmg"
+          download
+          className="mb-4 inline-flex items-center gap-2 rounded-lg bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-teal-800"
+        >
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/brand/memoryos-icon.png" alt="" width={20} height={20} className="rounded-md" />
+          Download MemoryOS for Mac
+        </a>
         <ul className="list-disc pl-5 text-sm text-slate-700 space-y-1">
           <li>Default capture every 5s with smart update-in-place sessions</li>
           <li>Grant Screen Recording and Accessibility when prompted</li>
