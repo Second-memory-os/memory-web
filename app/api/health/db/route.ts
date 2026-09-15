@@ -10,7 +10,6 @@ export async function GET() {
   let host = '';
   let isLocalhost = false;
   try {
-    // postgres URLs aren't always valid URL() without rewriting
     const normalized = raw.replace(/^postgresql:/, 'http:').replace(/^postgres:/, 'http:');
     const u = new URL(normalized);
     host = u.hostname;
@@ -43,16 +42,25 @@ export async function GET() {
     );
   }
 
+  let schemaEnsureError: string | undefined;
   try {
     const { ensureUserConnectionsSchema } = await import('@/lib/db/ensure-user-connections');
     await ensureUserConnectionsSchema();
+  } catch (error) {
+    schemaEnsureError = error instanceof Error ? error.message : 'schema ensure failed';
+  }
 
+  try {
     const result = await pool.query(
       `SELECT current_database() AS db,
               EXISTS (
                 SELECT 1 FROM information_schema.tables
                 WHERE table_schema = 'public' AND table_name = 'users'
               ) AS has_users,
+              EXISTS (
+                SELECT 1 FROM information_schema.tables
+                WHERE table_schema = 'public' AND table_name = 'user_connections'
+              ) AS has_connections,
               EXISTS (
                 SELECT 1 FROM information_schema.columns
                 WHERE table_schema = 'public'
@@ -61,12 +69,15 @@ export async function GET() {
               ) AS has_tunnel_col`
     );
     const row = result.rows[0] || {};
+    const ok = Boolean(row.has_users) && Boolean(row.has_connections) && !schemaEnsureError;
     return NextResponse.json({
-      ok: true,
+      ok,
       checks,
       db: row.db,
       hasUsersTable: Boolean(row.has_users),
+      hasConnectionsTable: Boolean(row.has_connections),
       hasTunnelColumn: Boolean(row.has_tunnel_col),
+      schemaEnsureError,
     });
   } catch (error) {
     return NextResponse.json(
@@ -74,6 +85,7 @@ export async function GET() {
         ok: false,
         error: error instanceof Error ? error.message : 'Database connection failed',
         checks,
+        schemaEnsureError,
       },
       { status: 503 }
     );
