@@ -44,6 +44,9 @@ export async function GET() {
   }
 
   try {
+    const { ensureUserConnectionsSchema } = await import('@/lib/db/ensure-user-connections');
+    await ensureUserConnectionsSchema();
+
     const result = await pool.query(
       `SELECT current_database() AS db,
               EXISTS (
