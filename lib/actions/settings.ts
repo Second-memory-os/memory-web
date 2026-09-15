@@ -8,7 +8,7 @@ import { db } from '@/lib/db';
 import { userConnections } from '@/lib/db/schema';
 import { encrypt, decrypt } from '@/lib/crypto';
 import { getManagedMemoryDatabaseUrl } from '@/lib/memory-provisioning';
-import { ensureAiModelColumns } from '@/lib/db/ensure-ai-models';
+import { ensureUserConnectionsSchema } from '@/lib/db/ensure-user-connections';
 import {
   DEFAULT_MODELS_BY_PROVIDER,
   detectAiProvider,
@@ -62,7 +62,7 @@ export async function getSettingsState() {
     return null;
   }
 
-  await ensureAiModelColumns();
+  await ensureUserConnectionsSchema();
 
   const userId = session.user.id;
   const [connection] = await db
@@ -263,7 +263,7 @@ export async function saveOpenaiKey(
   formData: FormData
 ): Promise<SettingsActionState> {
   try {
-    await ensureAiModelColumns();
+    await ensureUserConnectionsSchema();
     const userId = await requireUserId();
     const rawKey = String(formData.get('openaiKey') ?? '').trim();
     const providerHint = String(formData.get('aiProvider') ?? '').trim() as AiProvider;

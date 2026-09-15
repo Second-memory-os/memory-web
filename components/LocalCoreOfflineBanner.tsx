@@ -100,15 +100,15 @@ export default function LocalCoreOfflineBanner() {
           </h3>
           <div className="text-slate-700 space-y-2 text-sm">
             <p>
-              Your memories are stored on this Mac. The web app needs Local Core on{' '}
-              <code className="text-xs bg-slate-100 px-1 rounded">127.0.0.1:3002</code>.
+              Your memories stay on your Mac. Production web needs the menu bar app
+              running with Local Core + Cloudflare tunnel so the timeline can load.
             </p>
             <div className="mt-4 space-y-1">
               <p className="font-medium text-slate-900">To reconnect:</p>
               <ol className="list-decimal list-inside space-y-1 text-slate-600">
-                <li>Open the MemoryOS menu bar app</li>
-                <li>Sign in with the same account</li>
-                <li>Wait for Local Core to start, then refresh this page</li>
+                <li>Open the MemoryOS menu bar app (from Applications)</li>
+                <li>Sign in with the same account used on this site</li>
+                <li>Wait until status shows Local Core / tunnel online, then refresh</li>
               </ol>
             </div>
           </div>

@@ -4,7 +4,7 @@ import { auth } from '@/auth';
 import { db } from '@/lib/db';
 import { userConnections } from '@/lib/db/schema';
 import { decrypt } from '@/lib/crypto';
-import { ensureAiModelColumns } from '@/lib/db/ensure-ai-models';
+import { ensureUserConnectionsSchema } from '@/lib/db/ensure-user-connections';
 import { detectAiProvider, fetchProviderModels, isSelfHostedProvider } from '@/lib/ai-models';
 
 /**
@@ -17,7 +17,7 @@ export async function GET() {
   }
 
   try {
-    await ensureAiModelColumns();
+    await ensureUserConnectionsSchema();
     const userId = session.user.id;
     const [connection] = await db
       .select()

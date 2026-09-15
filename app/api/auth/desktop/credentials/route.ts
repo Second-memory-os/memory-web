@@ -5,7 +5,7 @@ import { userConnections } from '@/lib/db/schema';
 import { decrypt } from '@/lib/crypto';
 import { auth } from '@/auth';
 import { mintApiAccessToken } from '@/lib/api-auth';
-import { ensureAiModelColumns } from '@/lib/db/ensure-ai-models';
+import { ensureUserConnectionsSchema } from '@/lib/db/ensure-user-connections';
 import {
   detectAiProvider,
   providerBaseUrl,
@@ -58,7 +58,7 @@ export async function GET(request: NextRequest) {
     );
   }
 
-  await ensureAiModelColumns();
+  await ensureUserConnectionsSchema();
 
   const [connection] = await db
     .select()
