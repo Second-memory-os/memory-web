@@ -3,32 +3,67 @@
 import { useEffect, useState } from 'react';
 import { checkLocalCoreHealth } from '@/lib/local-core-health';
 
+type Status = {
+  healthy: boolean;
+  via: 'localhost' | 'tunnel' | 'none';
+  pathHint?: string;
+  error?: string;
+};
+
 export default function LocalCoreOfflineBanner() {
-  const [healthStatus, setHealthStatus] = useState<{
-    isRunning: boolean;
-    engine?: string;
-    mode?: string;
-    path?: string;
-    error?: string;
-  } | null>(null);
+  const [status, setStatus] = useState<Status | null>(null);
   const [isChecking, setIsChecking] = useState(true);
 
   useEffect(() => {
     let mounted = true;
-    let intervalId: NodeJS.Timeout;
+    let intervalId: ReturnType<typeof setInterval>;
 
     const check = async () => {
-      const status = await checkLocalCoreHealth();
+      // Same-machine: Local Core on loopback (web + server on this Mac)
+      const local = await checkLocalCoreHealth('http://127.0.0.1:3002');
+      if (local.isRunning) {
+        if (mounted) {
+          setStatus({
+            healthy: true,
+            via: 'localhost',
+            pathHint: local.path,
+          });
+          setIsChecking(false);
+        }
+        return;
+      }
+
+      // Remote / tunnel path (cloud web talking to this Mac)
+      try {
+        const res = await fetch('/api/desktop/tunnel', { cache: 'no-store' });
+        if (res.ok) {
+          const data = await res.json();
+          if (mounted) {
+            setStatus({
+              healthy: Boolean(data.healthy),
+              via: data.healthy ? 'tunnel' : 'none',
+              pathHint: data.pathHint,
+              error: data.healthy ? undefined : data.error || local.error,
+            });
+            setIsChecking(false);
+          }
+          return;
+        }
+      } catch {
+        // fall through
+      }
+
       if (mounted) {
-        setHealthStatus(status);
+        setStatus({
+          healthy: false,
+          via: 'none',
+          error: local.error || 'Local Core offline',
+        });
         setIsChecking(false);
       }
     };
 
-    // Initial check
     check();
-
-    // Re-check every 10 seconds
     intervalId = setInterval(check, 10000);
 
     return () => {
@@ -37,8 +72,7 @@ export default function LocalCoreOfflineBanner() {
     };
   }, []);
 
-  // Don't show anything while checking or if everything is running
-  if (isChecking || healthStatus?.isRunning) {
+  if (isChecking || status?.healthy) {
     return null;
   }
 
@@ -61,28 +95,30 @@ export default function LocalCoreOfflineBanner() {
           </svg>
         </div>
         <div className="flex-1">
-          <h3 className="text-lg font-semibold text-slate-900 mb-2">MemoryOS isn't running</h3>
+          <h3 className="text-lg font-semibold text-slate-900 mb-2">
+            MemoryOS Local Core isn&apos;t running
+          </h3>
           <div className="text-slate-700 space-y-2 text-sm">
             <p>
-              Your memory is stored on this computer and isn't accessible because the MemoryOS
-              local service is offline.
+              Your memories are stored on this Mac. The web app needs Local Core on{' '}
+              <code className="text-xs bg-slate-100 px-1 rounded">127.0.0.1:3002</code>.
             </p>
             <div className="mt-4 space-y-1">
               <p className="font-medium text-slate-900">To reconnect:</p>
               <ol className="list-decimal list-inside space-y-1 text-slate-600">
                 <li>Open the MemoryOS menu bar app</li>
-                <li>Wait a few seconds for the Local Core to start</li>
-                <li>Refresh this page</li>
+                <li>Sign in with the same account</li>
+                <li>Wait for Local Core to start, then refresh this page</li>
               </ol>
             </div>
           </div>
           <div className="mt-4 pt-4 border-t border-slate-200">
-            <div className="flex items-center gap-3 text-xs text-slate-500">
+            <div className="flex flex-wrap items-center gap-3 text-xs text-slate-500">
               <div className="flex items-center gap-2">
                 <div className="w-2 h-2 rounded-full bg-red-400" />
                 <span>Local Core: Offline</span>
               </div>
-              {healthStatus?.error && <span className="text-slate-400">• {healthStatus.error}</span>}
+              {status?.error && <span className="text-slate-400">• {status.error}</span>}
             </div>
           </div>
         </div>

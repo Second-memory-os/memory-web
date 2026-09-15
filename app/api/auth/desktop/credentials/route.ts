@@ -94,19 +94,27 @@ export async function GET(request: NextRequest) {
 
   const token = await mintApiAccessToken({ id: userId });
 
+  // Mac Local Core must verify JWTs minted by this web app, and may load
+  // encrypted AI prefs from the shared auth DB. Memories stay in Mac SQLite.
   return NextResponse.json(
     {
       userId,
       token,
       aiKey: aiKey || null,
       provider,
-      apiBaseUrl: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001',
+      // Mac always writes/reads memory via Local Core on loopback.
+      apiBaseUrl: 'http://127.0.0.1:3002',
       openRouterBaseUrl: provider
         ? providerBaseUrl(provider, connection?.aiBaseUrl)
         : 'https://openrouter.ai/api/v1',
       visionModel: models.visionModel,
       chatModel: models.chatModel,
       embeddingModel: models.embeddingModel,
+      jwtSecret: process.env.JWT_SECRET || null,
+      encryptionKey: process.env.ENCRYPTION_KEY || null,
+      authDatabaseUrl:
+        process.env.AUTH_DATABASE_URL || process.env.DATABASE_URL || null,
+      localFirst: true,
     },
     { headers: corsHeaders }
   );
