@@ -36,6 +36,9 @@ export default async function SettingsPage() {
   const remoteMcpUrl = mcpBuilt.remoteMcpUrl;
   const remoteMcpTokenConfigured = mcpBuilt.remoteMcpTokenConfigured;
   const openaiMcpJson = mcpBuilt.openaiMcpJson;
+  const claudeRemoteConnectorJson = mcpBuilt.claudeRemoteConnectorJson;
+  const oauthIssuer = mcpBuilt.oauthIssuer;
+  const oauthConfigured = mcpBuilt.oauthConfigured;
 
   const remoteMcpToken = process.env.MCP_API_TOKEN || '';
 
@@ -78,6 +81,9 @@ export default async function SettingsPage() {
           remoteMcpToken={remoteMcpToken}
           remoteMcpTokenConfigured={remoteMcpTokenConfigured}
           openaiMcpJson={openaiMcpJson}
+          claudeRemoteConnectorJson={claudeRemoteConnectorJson}
+          oauthIssuer={oauthIssuer}
+          oauthConfigured={oauthConfigured}
           webAppUrl={process.env.NEXTAUTH_URL || process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}
         />
       </main>

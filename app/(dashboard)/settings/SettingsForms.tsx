@@ -42,6 +42,9 @@ type Props = {
   remoteMcpToken: string;
   remoteMcpTokenConfigured: boolean;
   openaiMcpJson: string;
+  claudeRemoteConnectorJson: string;
+  oauthIssuer: string;
+  oauthConfigured: boolean;
   webAppUrl: string;
 };
 
@@ -156,6 +159,9 @@ export default function SettingsForms({
   remoteMcpToken,
   remoteMcpTokenConfigured,
   openaiMcpJson,
+  claudeRemoteConnectorJson,
+  oauthIssuer,
+  oauthConfigured,
   webAppUrl,
 }: Props) {
   const [openaiKey, setOpenaiKey] = useState(hasOpenaiKey ? '••••••••' : '');
@@ -579,21 +585,66 @@ export default function SettingsForms({
         </div>
 
         <p className="text-slate-600 mb-4">
-          Local stdio for Claude Desktop / Cursor. Remote Streamable HTTP for OpenAI / ChatGPT.
-          User ID:{' '}
+          <strong>Claude.ai</strong> uses OAuth (each user signs in — no shared user id).{' '}
+          <strong>Claude Desktop / Cursor</strong> can use local stdio. ChatGPT can still use a
+          shared Bearer token. Your user id:{' '}
           <code className="rounded bg-slate-100 px-1.5 py-0.5 text-xs text-slate-900">{userId}</code>
         </p>
 
+        <div className="mb-6 rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-950">
+          <p className="font-semibold">Claude.ai custom connector (OAuth — recommended)</p>
+          <p className="mt-2">
+            Paste the MCP URL into Claude. Claude discovers MemoryOS login, redirects you here to
+            sign in, and binds tools to <em>your</em> account. Multi-user safe — no{' '}
+            <code className="rounded bg-white px-1">MCP_USER_ID</code> needed.
+          </p>
+          <p className="mt-2">
+            <span className="font-medium">MCP URL:</span>{' '}
+            <code className="rounded bg-white border border-emerald-200 px-1.5 py-0.5 text-slate-900 break-all">
+              {remoteMcpUrl || '(set MCP_PUBLIC_URL on memory-server)'}
+            </code>
+          </p>
+          <p className="mt-2">
+            <span className="font-medium">Login server (issuer):</span>{' '}
+            <code className="rounded bg-white border border-emerald-200 px-1.5 py-0.5 text-slate-900 break-all">
+              {oauthIssuer}
+            </code>
+            {!oauthConfigured ? (
+              <span className="ml-2 text-amber-800">(set AUTH_URL / MCP_OAUTH_ISSUER)</span>
+            ) : null}
+          </p>
+          <ol className="mt-3 list-decimal space-y-1 pl-5">
+            <li>
+              Open Claude → <strong>Customize → Connectors → Add custom connector</strong>
+            </li>
+            <li>Paste the MCP URL above (HTTPS)</li>
+            <li>
+              Choose Claude&apos;s OAuth / sign-in flow (not static API key). When prompted, sign in
+              to MemoryOS and click <strong>Allow access</strong>
+            </li>
+            <li>
+              In a chat, enable the connector via <strong>+ → Connectors</strong>
+            </li>
+          </ol>
+          <CodeBlock
+            title="Claude connector reference"
+            value={claudeRemoteConnectorJson}
+            copyKey="claude-remote"
+            copiedKey={copiedKey}
+            onCopy={copyText}
+          />
+        </div>
+
         <div className="mb-6 rounded-lg border border-sky-200 bg-sky-50 px-4 py-3 text-sm text-sky-950">
-          <p className="font-semibold text-sky-950">OpenAI / ChatGPT (remote MCP over tunnel)</p>
+          <p className="font-semibold text-sky-950">OpenAI / ChatGPT (optional shared Bearer)</p>
           <p className="mt-2 text-sky-950">
-            Claude/ChatGPT reach <strong>this Mac only</strong> via an HTTPS tunnel to localhost:3001.
-            Tool calls read/write the public Postgres schema — memory rows are isolated by your user id.
+            ChatGPT still uses a shared machine token. Prefer OAuth for Claude. Token is optional
+            when everyone uses Claude OAuth.
           </p>
           <p className="mt-2 text-sky-950">
             <span className="font-medium">Server URL:</span>{' '}
             <code className="rounded bg-white border border-sky-200 px-1.5 py-0.5 text-slate-900 break-all">
-              {remoteMcpUrl || '(set MCP_PUBLIC_URL to your ngrok/Cloudflare tunnel)'}
+              {remoteMcpUrl || '(set MCP_PUBLIC_URL)'}
             </code>
           </p>
           <p className="mt-2 text-sky-950">
@@ -610,25 +661,9 @@ export default function SettingsForms({
                 {showToken ? 'Hide token' : 'Show token'}
               </button>
             ) : (
-              <span className="ml-2 text-amber-800">(MCP_API_TOKEN missing in env)</span>
+              <span className="ml-2 text-amber-800">(MCP_API_TOKEN missing — OK if OAuth-only)</span>
             )}
           </p>
-          <p className="mt-3 rounded-lg border border-sky-200 bg-white px-3 py-2 text-sky-950">
-            Opening <code className="text-slate-900">/mcp</code> in a browser will always say
-            Unauthorized. That endpoint is not a webpage — OpenAI must send the Bearer token. Use{' '}
-            <code className="text-slate-900">/mcp/info</code> to check the server without auth.
-          </p>
-          <ol className="mt-3 list-decimal space-y-1 pl-5 text-sky-950">
-            <li>
-              Run <code className="text-slate-900">memory-server</code> on this Mac (port 3001)
-            </li>
-            <li>
-              Expose it with ngrok or Cloudflare Tunnel, set{' '}
-              <code className="text-slate-900">MCP_PUBLIC_URL</code>
-            </li>
-            <li>Restart memory-server, then paste the OpenAI JSON below</li>
-          </ol>
-
           <CodeBlock
             title="OpenAI MCP tool JSON"
             value={openaiMcpJson}
@@ -639,7 +674,7 @@ export default function SettingsForms({
         </div>
 
         <div className="mb-4 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-950">
-          <p className="font-semibold">Claude Desktop setup (local)</p>
+          <p className="font-semibold">Claude Desktop setup (local stdio)</p>
           <ol className="mt-2 list-decimal space-y-1 pl-5">
             <li>
               Open Claude Desktop → <strong>Settings → Developer → Edit Config</strong>
