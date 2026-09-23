@@ -63,6 +63,10 @@ export default async function OauthConsentPage({ searchParams }: Props) {
             <p className="mt-2 break-all rounded-lg bg-slate-100 px-3 py-2 font-mono text-xs text-slate-700">
               {resource}
             </p>
+            <p className="mt-2 text-xs text-slate-500">
+              Memories stay on your Mac. This URL is your Cloudflare tunnel — it can change when
+              MemoryOS restarts; that is OK.
+            </p>
             <ConsentForm
               responseType={params.response_type}
               clientId={params.client_id}

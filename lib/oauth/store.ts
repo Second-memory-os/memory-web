@@ -116,16 +116,44 @@ export async function assertResourceForUser(userId: string, resource: string) {
   if (!isAllowedMcpResource(normalized)) {
     throw new OAuthError('invalid_target', 'Invalid MCP resource URL');
   }
-  const tunnelResource = await resolveUserMcpResource(userId);
-  if (tunnelResource && normalizeResource(tunnelResource) !== normalized) {
-    // Still allow if it matches static MCP_PUBLIC_URL (rare hosted path).
-    const configured = normalizeResource(mcpResourceUrl());
-    if (!(process.env.MCP_PUBLIC_URL && normalized === configured)) {
-      throw new OAuthError(
-        'invalid_target',
-        `Use your Mac tunnel MCP URL: ${tunnelResource}`
-      );
+
+  // Quick tunnels rotate often — Claude may still hold a previous trycloudflare host.
+  // Accept any valid tunnel /mcp for this signed-in user; sync DB to Claude's resource.
+  try {
+    const u = new URL(normalized);
+    if (
+      u.hostname.endsWith('.trycloudflare.com') ||
+      u.hostname.endsWith('.cfargotunnel.com') ||
+      Boolean(process.env.TUNNEL_HOST_SUFFIX && u.hostname.endsWith(process.env.TUNNEL_HOST_SUFFIX))
+    ) {
+      const { userConnections } = await import('@/lib/db/schema');
+      const { ensureTunnelColumns } = await import('@/lib/db/ensure-tunnel');
+      await ensureTunnelColumns();
+      const tunnelBase = `${u.protocol}//${u.host}`;
+      const [existing] = await db
+        .select({ id: userConnections.id })
+        .from(userConnections)
+        .where(eq(userConnections.userId, userId))
+        .limit(1);
+      if (existing) {
+        await db
+          .update(userConnections)
+          .set({
+            localTunnelUrl: tunnelBase,
+            localTunnelUpdatedAt: new Date(),
+            updatedAt: new Date(),
+          })
+          .where(eq(userConnections.userId, userId));
+      } else {
+        await db.insert(userConnections).values({
+          userId,
+          localTunnelUrl: tunnelBase,
+          localTunnelUpdatedAt: new Date(),
+        });
+      }
     }
+  } catch {
+    /* non-fatal — auth still proceeds */
   }
 }
 
