@@ -119,6 +119,7 @@ export async function getSettingsState() {
     chatModel: models.chatModel,
     visionModel: models.visionModel,
     embeddingModel: models.embeddingModel,
+    localTunnelUrl: connection?.localTunnelUrl ?? '',
   };
 }
 

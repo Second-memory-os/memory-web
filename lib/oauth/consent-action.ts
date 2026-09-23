@@ -8,6 +8,7 @@ import {
   buildAuthorizeRedirect,
   issueAuthorizationCode,
   validateAuthorizeRequest,
+  assertResourceForUser,
   type AuthorizeParams,
 } from '@/lib/oauth/store';
 
@@ -37,6 +38,7 @@ export async function approveMcpConsentAction(
 
   try {
     const { resource, scope } = await validateAuthorizeRequest(params);
+    await assertResourceForUser(session.user.id, resource);
 
     if (decision !== 'approve') {
       redirect(

@@ -31,7 +31,12 @@ export default async function SettingsPage() {
     path.resolve(process.cwd(), '../memory-server');
 
   const nodeBin = resolveNodeBinLegacy();
-  const mcpBuilt = buildMcpConfig({ userId: settings.userId, memoryServerRoot, nodeBin });
+  const mcpBuilt = buildMcpConfig({
+    userId: settings.userId,
+    memoryServerRoot,
+    nodeBin,
+    localTunnelUrl: settings.localTunnelUrl,
+  });
   const mcpConfigJson = mcpBuilt.claudeMcpJson;
   const remoteMcpUrl = mcpBuilt.remoteMcpUrl;
   const remoteMcpTokenConfigured = mcpBuilt.remoteMcpTokenConfigured;
@@ -39,6 +44,7 @@ export default async function SettingsPage() {
   const claudeRemoteConnectorJson = mcpBuilt.claudeRemoteConnectorJson;
   const oauthIssuer = mcpBuilt.oauthIssuer;
   const oauthConfigured = mcpBuilt.oauthConfigured;
+  const localFirst = mcpBuilt.localFirst;
 
   const remoteMcpToken = process.env.MCP_API_TOKEN || '';
 
@@ -84,6 +90,7 @@ export default async function SettingsPage() {
           claudeRemoteConnectorJson={claudeRemoteConnectorJson}
           oauthIssuer={oauthIssuer}
           oauthConfigured={oauthConfigured}
+          localFirst={localFirst}
           webAppUrl={process.env.NEXTAUTH_URL || process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}
         />
       </main>

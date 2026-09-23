@@ -63,16 +63,70 @@ export async function validateAuthorizeRequest(params: AuthorizeParams) {
   }
 
   const resource = normalizeResource(params.resource || mcpResourceUrl());
-  const expected = normalizeResource(mcpResourceUrl());
-  if (resource !== expected) {
-    // Allow trailing-slash variants already normalized; otherwise reject.
+  if (!isAllowedMcpResource(resource)) {
     throw new OAuthError(
       'invalid_target',
-      `resource must be the MemoryOS MCP URL (${expected})`
+      'resource must be your MemoryOS MCP URL (Cloudflare tunnel …/mcp or configured MCP_PUBLIC_URL)'
     );
   }
 
   return { client, resource, scope: params.scope || MCP_OAUTH_SCOPE };
+}
+
+/** Static cloud URL or per-user Mac tunnel (local-first). */
+export function isAllowedMcpResource(resource: string): boolean {
+  const normalized = normalizeResource(resource);
+  const configured = normalizeResource(mcpResourceUrl());
+  if (process.env.MCP_PUBLIC_URL && normalized === configured) {
+    return true;
+  }
+
+  try {
+    const u = new URL(normalized);
+    if (u.protocol !== 'https:') return false;
+    const path = u.pathname.replace(/\/$/, '') || '/';
+    if (path !== '/mcp') return false;
+    return (
+      u.hostname.endsWith('.trycloudflare.com') ||
+      u.hostname.endsWith('.cfargotunnel.com') ||
+      Boolean(process.env.TUNNEL_HOST_SUFFIX && u.hostname.endsWith(process.env.TUNNEL_HOST_SUFFIX))
+    );
+  } catch {
+    return false;
+  }
+}
+
+/** Prefer the user's live Mac tunnel when present. */
+export async function resolveUserMcpResource(userId: string): Promise<string | null> {
+  const { userConnections } = await import('@/lib/db/schema');
+  const { ensureTunnelColumns } = await import('@/lib/db/ensure-tunnel');
+  await ensureTunnelColumns();
+  const [row] = await db
+    .select({ url: userConnections.localTunnelUrl })
+    .from(userConnections)
+    .where(eq(userConnections.userId, userId))
+    .limit(1);
+  const tunnel = row?.url?.replace(/\/$/, '');
+  if (!tunnel) return null;
+  return `${tunnel}/mcp`;
+}
+
+export async function assertResourceForUser(userId: string, resource: string) {
+  const normalized = normalizeResource(resource);
+  if (!isAllowedMcpResource(normalized)) {
+    throw new OAuthError('invalid_target', 'Invalid MCP resource URL');
+  }
+  const tunnelResource = await resolveUserMcpResource(userId);
+  if (tunnelResource && normalizeResource(tunnelResource) !== normalized) {
+    // Still allow if it matches static MCP_PUBLIC_URL (rare hosted path).
+    const configured = normalizeResource(mcpResourceUrl());
+    if (!(process.env.MCP_PUBLIC_URL && normalized === configured)) {
+      throw new OAuthError(
+        'invalid_target',
+        `Use your Mac tunnel MCP URL: ${tunnelResource}`
+      );
+    }
+  }
 }
 
 export async function issueAuthorizationCode(input: {

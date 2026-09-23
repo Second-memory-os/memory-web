@@ -45,6 +45,7 @@ type Props = {
   claudeRemoteConnectorJson: string;
   oauthIssuer: string;
   oauthConfigured: boolean;
+  localFirst: boolean;
   webAppUrl: string;
 };
 
@@ -162,6 +163,7 @@ export default function SettingsForms({
   claudeRemoteConnectorJson,
   oauthIssuer,
   oauthConfigured,
+  localFirst,
   webAppUrl,
 }: Props) {
   const [openaiKey, setOpenaiKey] = useState(hasOpenaiKey ? '••••••••' : '');
@@ -592,16 +594,21 @@ export default function SettingsForms({
         </p>
 
         <div className="mb-6 rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-950">
-          <p className="font-semibold">Claude.ai custom connector (OAuth — recommended)</p>
+          <p className="font-semibold">Claude.ai custom connector (local-first + OAuth)</p>
           <p className="mt-2">
-            Paste the MCP URL into Claude. Claude discovers MemoryOS login, redirects you here to
-            sign in, and binds tools to <em>your</em> account. Multi-user safe — no{' '}
-            <code className="rounded bg-white px-1">MCP_USER_ID</code> needed.
+            Memories stay on <strong>your Mac (SQLite)</strong>. Claude reaches them through your
+            Cloudflare tunnel — not a cloud database. Sign-in still happens on MemoryOS web (OAuth).
           </p>
+          {!localFirst ? (
+            <p className="mt-2 rounded-lg border border-amber-300 bg-amber-50 px-3 py-2 text-amber-950">
+              No Mac tunnel registered yet. Open <strong>MemoryOS.app</strong> on your Mac (signed
+              in), wait until tunnel shows online, then refresh this page.
+            </p>
+          ) : null}
           <p className="mt-2">
-            <span className="font-medium">MCP URL:</span>{' '}
+            <span className="font-medium">MCP URL (paste into Claude):</span>{' '}
             <code className="rounded bg-white border border-emerald-200 px-1.5 py-0.5 text-slate-900 break-all">
-              {remoteMcpUrl || '(set MCP_PUBLIC_URL on memory-server)'}
+              {remoteMcpUrl || '(waiting for Mac tunnel…)'}
             </code>
           </p>
           <p className="mt-2">
@@ -610,22 +617,21 @@ export default function SettingsForms({
               {oauthIssuer}
             </code>
             {!oauthConfigured ? (
-              <span className="ml-2 text-amber-800">(set AUTH_URL / MCP_OAUTH_ISSUER)</span>
+              <span className="ml-2 text-amber-800">(set AUTH_URL / MCP_OAUTH_ISSUER on web)</span>
             ) : null}
           </p>
           <ol className="mt-3 list-decimal space-y-1 pl-5">
+            <li>Keep MemoryOS.app running with tunnel online</li>
             <li>
-              Open Claude → <strong>Customize → Connectors → Add custom connector</strong>
+              Claude → <strong>Customize → Connectors → Add custom connector</strong>
             </li>
-            <li>Paste the MCP URL above (HTTPS)</li>
-            <li>
-              Choose Claude&apos;s OAuth / sign-in flow (not static API key). When prompted, sign in
-              to MemoryOS and click <strong>Allow access</strong>
-            </li>
-            <li>
-              In a chat, enable the connector via <strong>+ → Connectors</strong>
-            </li>
+            <li>Paste the MCP URL above (must be your <code>*.trycloudflare.com/mcp</code>)</li>
+            <li>Sign in on MemoryOS when redirected → Allow access</li>
           </ol>
+          <p className="mt-2 text-xs text-emerald-900/80">
+            Quick tunnels rotate. If Claude breaks after a Mac restart, copy the new URL from here
+            and update the connector.
+          </p>
           <CodeBlock
             title="Claude connector reference"
             value={claudeRemoteConnectorJson}

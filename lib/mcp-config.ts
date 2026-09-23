@@ -7,6 +7,8 @@ export type BuildMcpConfigInput = {
   nodeBin?: string;
   mcpPublicUrl?: string;
   mcpPath?: string;
+  /** Live Cloudflare tunnel to this user's Mac Local Core (preferred for Claude). */
+  localTunnelUrl?: string;
 };
 
 export function resolveNodeBin(nodeBin?: string): string {
@@ -39,28 +41,36 @@ export function buildMcpConfig(input: BuildMcpConfigInput) {
   };
 
   const mcpPath = input.mcpPath || process.env.MCP_PATH || '/mcp';
+  const tunnelBase = (input.localTunnelUrl || '').replace(/\/$/, '');
   const mcpPublicBase = (input.mcpPublicUrl || process.env.MCP_PUBLIC_URL || '').replace(/\/$/, '');
-  const remoteMcpUrl = mcpPublicBase
-    ? `${mcpPublicBase}${mcpPath.startsWith('/') ? mcpPath : `/${mcpPath}`}`
-    : mcpResourceUrl();
+
+  // Local-first: Claude must hit the Mac tunnel, not a cloud Postgres API.
+  const remoteMcpUrl = tunnelBase
+    ? `${tunnelBase}${mcpPath.startsWith('/') ? mcpPath : `/${mcpPath}`}`
+    : mcpPublicBase
+      ? `${mcpPublicBase}${mcpPath.startsWith('/') ? mcpPath : `/${mcpPath}`}`
+      : mcpResourceUrl();
 
   const remoteMcpTokenConfigured = Boolean(process.env.MCP_API_TOKEN);
   const oauthConfigured = Boolean(
     process.env.MCP_OAUTH_ISSUER || process.env.AUTH_URL || process.env.NEXTAUTH_URL
   );
+  const localFirst = Boolean(tunnelBase);
 
-  // Claude.ai custom connector — URL only; OAuth handles per-user identity.
   const claudeRemoteConnector = {
     name: 'MemoryOS',
-    url: remoteMcpUrl || 'https://YOUR_PUBLIC_HOST/mcp',
+    url: remoteMcpUrl || 'https://YOUR_TUNNEL.trycloudflare.com/mcp',
     auth: 'oauth',
-    note: 'Paste url into Claude → Customize → Connectors → Add custom connector. Sign in on MemoryOS when redirected.',
+    storage: localFirst ? 'local-sqlite-via-tunnel' : 'configured-mcp-public-url',
+    note: localFirst
+      ? 'Paste url into Claude → Connectors. Data stays on your Mac (SQLite); tunnel is only the door.'
+      : 'Open MemoryOS.app on your Mac so a Cloudflare tunnel registers, then refresh Settings.',
   };
 
   const openaiMcpConfig = {
     type: 'mcp',
     server_label: 'memoryos',
-    server_url: remoteMcpUrl || 'https://YOUR_PUBLIC_HOST/mcp',
+    server_url: remoteMcpUrl || 'https://YOUR_TUNNEL.trycloudflare.com/mcp',
     authorization: remoteMcpTokenConfigured ? 'Bearer ••••••••' : 'Bearer YOUR_MCP_API_TOKEN',
     require_approval: 'never',
   };
@@ -75,6 +85,8 @@ export function buildMcpConfig(input: BuildMcpConfigInput) {
     remoteMcpTokenConfigured,
     oauthIssuer: oauthIssuer(),
     oauthConfigured,
+    localFirst,
+    localTunnelUrl: tunnelBase,
   };
 }
 
@@ -96,15 +108,15 @@ export function buildMcpTestCommands(opts: {
     'http://localhost:3000';
 
   return [
-    `# Claude OAuth discovery:`,
+    `# Local-first: these hit your Mac via Cloudflare tunnel`,
+    `curl -s ${url.replace(/\/mcp$/, '')}/health`,
     `curl -s ${url}/info`,
-    `curl -s ${url.replace(/\/mcp$/, '')}/.well-known/oauth-protected-resource/mcp`,
     `curl -s ${issuer}/.well-known/oauth-authorization-server`,
     ``,
-    `# Legacy shared-token smoke (optional, ChatGPT):`,
+    `# Optional legacy shared-token smoke:`,
     `curl -s -X POST ${url} -H 'Authorization: Bearer ${token}' -H 'Content-Type: application/json' -H 'Accept: application/json, text/event-stream' -d '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2024-11-05","capabilities":{},"clientInfo":{"name":"test","version":"1.0"}}}',`,
     ``,
-    `# Stdio smoke-test for Claude Desktop:`,
+    `# Same-Mac Claude Desktop stdio:`,
     `USER_ID=${opts.userId} ${opts.nodeBin} ${tsxCli} ${entry}`,
   ].join('\n');
 }
