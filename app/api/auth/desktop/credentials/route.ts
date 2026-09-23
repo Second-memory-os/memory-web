@@ -94,6 +94,12 @@ export async function GET(request: NextRequest) {
 
   const token = await mintApiAccessToken({ id: userId });
 
+  // Public Dokploy/hosted API — Mac dials WSS here; Claude uses MCP_PUBLIC_URL/mcp.
+  const relayBaseUrl = (process.env.MCP_PUBLIC_URL || '').replace(/\/$/, '') || null;
+  const relayWsUrl = relayBaseUrl
+    ? `${relayBaseUrl.replace(/^http/i, 'ws')}/tunnel/v1/agent`
+    : null;
+
   // Mac Local Core must verify JWTs minted by this web app, and may load
   // encrypted AI prefs from the shared auth DB. Memories stay in Mac SQLite.
   return NextResponse.json(
@@ -104,6 +110,10 @@ export async function GET(request: NextRequest) {
       provider,
       // Mac always writes/reads memory via Local Core on loopback.
       apiBaseUrl: 'http://127.0.0.1:3002',
+      /** Dokploy memory-server HTTPS base (stable Claude / web proxy target). */
+      relayBaseUrl,
+      /** wss://…/tunnel/v1/agent — Mac outbound reverse tunnel (replaces Cloudflare). */
+      relayWsUrl,
       openRouterBaseUrl: provider
         ? providerBaseUrl(provider, connection?.aiBaseUrl)
         : 'https://openrouter.ai/api/v1',

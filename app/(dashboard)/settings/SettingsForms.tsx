@@ -597,7 +597,8 @@ export default function SettingsForms({
           <p className="font-semibold">Claude.ai custom connector (local-first + OAuth)</p>
           <p className="mt-2">
             Memories stay on <strong>your Mac (SQLite)</strong>. Claude reaches them through your
-            Cloudflare tunnel — not a cloud database. Sign-in still happens on MemoryOS web (OAuth).
+            Dokploy Memory server reverse tunnel — not a cloud database. Sign-in still happens on
+            MemoryOS web (OAuth).
           </p>
           {!localFirst ? (
             <p className="mt-2 rounded-lg border border-amber-300 bg-amber-50 px-3 py-2 text-amber-950">
@@ -621,16 +622,18 @@ export default function SettingsForms({
             ) : null}
           </p>
           <ol className="mt-3 list-decimal space-y-1 pl-5">
-            <li>Keep MemoryOS.app running with tunnel online</li>
+            <li>Keep MemoryOS.app running and signed in (tunnel online)</li>
             <li>
               Claude → <strong>Customize → Connectors → Add custom connector</strong>
             </li>
-            <li>Paste the MCP URL above (must be your <code>*.trycloudflare.com/mcp</code>)</li>
+            <li>
+              Paste the MCP URL above (your Dokploy host <code>…/mcp</code> — stable, never rotates)
+            </li>
             <li>Sign in on MemoryOS when redirected → Allow access</li>
           </ol>
           <p className="mt-2 text-xs text-emerald-900/80">
-            Quick tunnels rotate. If Claude breaks after a Mac restart, copy the new URL from here
-            and update the connector.
+            The MCP URL stays fixed on your Dokploy server. Only your signed-in Mac can answer
+            requests (secret JWT over the reverse tunnel).
           </p>
           <CodeBlock
             title="Claude connector reference"

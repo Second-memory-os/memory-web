@@ -44,7 +44,7 @@ export const userConnections = pgTable('user_connections', {
   /** OpenAI-compatible endpoint for the `ollama` and `custom` providers. */
   aiBaseUrl: text('ai_base_url'),
   connectionVerified: boolean('connection_verified').default(false).notNull(),
-  /** Cloudflare quick-tunnel URL pointing at this user's Mac Local Core (SQLite). */
+  /** Public relay base (Dokploy MCP_PUBLIC_URL) while Mac reverse tunnel is online. */
   localTunnelUrl: text('local_tunnel_url'),
   localTunnelUpdatedAt: timestamp('local_tunnel_updated_at', { withTimezone: true }),
   createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),

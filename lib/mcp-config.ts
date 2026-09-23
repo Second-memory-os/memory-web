@@ -7,7 +7,7 @@ export type BuildMcpConfigInput = {
   nodeBin?: string;
   mcpPublicUrl?: string;
   mcpPath?: string;
-  /** Live Cloudflare tunnel to this user's Mac Local Core (preferred for Claude). */
+  /** Live reverse-tunnel registration (Dokploy base while Mac agent is online). */
   localTunnelUrl?: string;
 };
 
@@ -44,33 +44,32 @@ export function buildMcpConfig(input: BuildMcpConfigInput) {
   const tunnelBase = (input.localTunnelUrl || '').replace(/\/$/, '');
   const mcpPublicBase = (input.mcpPublicUrl || process.env.MCP_PUBLIC_URL || '').replace(/\/$/, '');
 
-  // Local-first: Claude must hit the Mac tunnel, not a cloud Postgres API.
-  const remoteMcpUrl = tunnelBase
-    ? `${tunnelBase}${mcpPath.startsWith('/') ? mcpPath : `/${mcpPath}`}`
-    : mcpPublicBase
-      ? `${mcpPublicBase}${mcpPath.startsWith('/') ? mcpPath : `/${mcpPath}`}`
-      : mcpResourceUrl();
+  // Prefer stable Dokploy MCP_PUBLIC_URL; fall back to registered relay/tunnel base.
+  const preferredBase = mcpPublicBase || tunnelBase;
+  const remoteMcpUrl = preferredBase
+    ? `${preferredBase}${mcpPath.startsWith('/') ? mcpPath : `/${mcpPath}`}`
+    : mcpResourceUrl();
 
   const remoteMcpTokenConfigured = Boolean(process.env.MCP_API_TOKEN);
   const oauthConfigured = Boolean(
     process.env.MCP_OAUTH_ISSUER || process.env.AUTH_URL || process.env.NEXTAUTH_URL
   );
-  const localFirst = Boolean(tunnelBase);
+  const localFirst = Boolean(tunnelBase || mcpPublicBase);
 
   const claudeRemoteConnector = {
     name: 'MemoryOS',
-    url: remoteMcpUrl || 'https://YOUR_TUNNEL.trycloudflare.com/mcp',
+    url: remoteMcpUrl || 'https://YOUR_DOKPLOY_API/mcp',
     auth: 'oauth',
-    storage: localFirst ? 'local-sqlite-via-tunnel' : 'configured-mcp-public-url',
-    note: localFirst
-      ? 'Paste url into Claude → Connectors. Data stays on your Mac (SQLite); tunnel is only the door.'
-      : 'Open MemoryOS.app on your Mac so a Cloudflare tunnel registers, then refresh Settings.',
+    storage: tunnelBase ? 'local-sqlite-via-tunnel' : 'configured-mcp-public-url',
+    note: tunnelBase
+      ? 'Paste url into Claude → Connectors. Data stays on your Mac (SQLite); Dokploy is only the door.'
+      : 'Open MemoryOS.app on your Mac so the reverse tunnel registers, then refresh Settings.',
   };
 
   const openaiMcpConfig = {
     type: 'mcp',
     server_label: 'memoryos',
-    server_url: remoteMcpUrl || 'https://YOUR_TUNNEL.trycloudflare.com/mcp',
+    server_url: remoteMcpUrl || 'https://YOUR_DOKPLOY_API/mcp',
     authorization: remoteMcpTokenConfigured ? 'Bearer ••••••••' : 'Bearer YOUR_MCP_API_TOKEN',
     require_approval: 'never',
   };
@@ -108,7 +107,7 @@ export function buildMcpTestCommands(opts: {
     'http://localhost:3000';
 
   return [
-    `# Local-first: these hit your Mac via Cloudflare tunnel`,
+    `# Local-first: these hit your Mac via Dokploy reverse tunnel`,
     `curl -s ${url.replace(/\/mcp$/, '')}/health`,
     `curl -s ${url}/info`,
     `curl -s ${issuer}/.well-known/oauth-authorization-server`,

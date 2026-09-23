@@ -66,14 +66,14 @@ export async function validateAuthorizeRequest(params: AuthorizeParams) {
   if (!isAllowedMcpResource(resource)) {
     throw new OAuthError(
       'invalid_target',
-      'resource must be your MemoryOS MCP URL (Cloudflare tunnel …/mcp or configured MCP_PUBLIC_URL)'
+      'resource must be your MemoryOS MCP URL (Dokploy MCP_PUBLIC_URL …/mcp)'
     );
   }
 
   return { client, resource, scope: params.scope || MCP_OAUTH_SCOPE };
 }
 
-/** Static cloud URL, quick tunnel, or named tunnel hostname (local-first). */
+/** Dokploy MCP_PUBLIC_URL, or legacy tunnel hostnames during migration. */
 export function isAllowedMcpResource(resource: string): boolean {
   const normalized = normalizeResource(resource);
   const configured = normalizeResource(mcpResourceUrl());

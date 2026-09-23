@@ -72,7 +72,7 @@ async function ensureConnectionRow(userId: string) {
   }
 }
 
-/** Mac app registers its Cloudflare tunnel URL here. */
+/** Mac app registers its public relay base (Dokploy MCP_PUBLIC_URL) when the reverse tunnel is up. */
 export async function POST(request: NextRequest) {
   const userId = await resolveUserId(request);
   if (!userId) {
@@ -89,7 +89,7 @@ export async function POST(request: NextRequest) {
   const url = (body.url || '').trim().replace(/\/$/, '');
   if (!url || !isValidTunnelUrl(url)) {
     return NextResponse.json(
-      { error: 'url must be an https Cloudflare tunnel hostname' },
+      { error: 'url must be an https host (Dokploy MCP_PUBLIC_URL or tunnel)' },
       { status: 400, headers: corsHeaders }
     );
   }
@@ -154,26 +154,51 @@ export async function GET(request: NextRequest) {
   let mode: string | undefined;
   let pathHint: string | undefined;
   let error: string | undefined;
+  let agentOnline: boolean | undefined;
 
   if (url) {
     try {
       const controller = new AbortController();
       const timeout = setTimeout(() => controller.abort(), 4000);
-      const res = await fetch(`${url}/health`, {
+      const authHeader = request.headers.get('authorization') || '';
+
+      // Preferred: reverse-tunnel agent presence on Dokploy memory-server.
+      const statusRes = await fetch(`${url}/tunnel/v1/status`, {
         signal: controller.signal,
         cache: 'no-store',
+        headers: authHeader ? { Authorization: authHeader } : {},
       });
-      clearTimeout(timeout);
-      if (res.ok) {
-        const data = (await res.json()) as {
-          storage?: { engine?: string; mode?: string; pathHint?: string; path?: string };
-        };
-        healthy = true;
-        engine = data.storage?.engine;
-        mode = data.storage?.mode;
-        pathHint = data.storage?.pathHint || data.storage?.path;
-      } else {
-        error = `HTTP ${res.status}`;
+      if (statusRes.ok) {
+        const status = (await statusRes.json()) as { online?: boolean; relay?: boolean };
+        if (status.relay) {
+          agentOnline = Boolean(status.online);
+          healthy = Boolean(status.online);
+          mode = status.online ? 'local-core-via-tunnel' : 'relay-waiting';
+          engine = 'sqlite';
+          if (!status.online) {
+            error = 'Mac agent offline — open MemoryOS and stay signed in';
+          }
+          clearTimeout(timeout);
+        }
+      }
+
+      if (agentOnline === undefined) {
+        const res = await fetch(`${url}/health`, {
+          signal: controller.signal,
+          cache: 'no-store',
+        });
+        clearTimeout(timeout);
+        if (res.ok) {
+          const data = (await res.json()) as {
+            storage?: { engine?: string; mode?: string; pathHint?: string; path?: string };
+          };
+          healthy = true;
+          engine = data.storage?.engine;
+          mode = data.storage?.mode;
+          pathHint = data.storage?.pathHint || data.storage?.path;
+        } else {
+          error = `HTTP ${res.status}`;
+        }
       }
     } catch (e) {
       error = e instanceof Error ? e.message : 'Tunnel unreachable';
@@ -188,6 +213,7 @@ export async function GET(request: NextRequest) {
       updatedAt,
       stale,
       healthy,
+      agentOnline,
       engine,
       mode,
       pathHint,

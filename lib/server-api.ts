@@ -21,7 +21,7 @@ function isLoopbackApi(url: string): boolean {
 
 /**
  * Resolve where memory data lives for this user.
- * 1) Cloudflare tunnel URL (cloud web ↔ Mac SQLite)
+ * 1) Registered relay base (Dokploy) while Mac reverse tunnel is online
  * 2) Same-machine Local Core via NEXT_PUBLIC_API_URL (web+server on the Mac)
  */
 export async function resolveMemoryApiBaseUrl(userId: string): Promise<{
@@ -103,7 +103,7 @@ export async function proxyToMemoryServer(
           error: 'Tunnel unreachable',
           code: 'LOCAL_TUNNEL_UNREACHABLE',
           message:
-            'Could not reach your Mac through the Cloudflare tunnel. Check that MemoryOS is running.',
+            'Could not reach your Mac through the MemoryOS tunnel. Check that MemoryOS is running and signed in.',
           detail,
         },
         { status: 503 }
