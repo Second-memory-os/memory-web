@@ -73,7 +73,7 @@ export async function validateAuthorizeRequest(params: AuthorizeParams) {
   return { client, resource, scope: params.scope || MCP_OAUTH_SCOPE };
 }
 
-/** Static cloud URL or per-user Mac tunnel (local-first). */
+/** Static cloud URL, quick tunnel, or named tunnel hostname (local-first). */
 export function isAllowedMcpResource(resource: string): boolean {
   const normalized = normalizeResource(resource);
   const configured = normalizeResource(mcpResourceUrl());
@@ -86,11 +86,15 @@ export function isAllowedMcpResource(resource: string): boolean {
     if (u.protocol !== 'https:') return false;
     const path = u.pathname.replace(/\/$/, '') || '/';
     if (path !== '/mcp') return false;
-    return (
+    if (
       u.hostname.endsWith('.trycloudflare.com') ||
       u.hostname.endsWith('.cfargotunnel.com') ||
       Boolean(process.env.TUNNEL_HOST_SUFFIX && u.hostname.endsWith(process.env.TUNNEL_HOST_SUFFIX))
-    );
+    ) {
+      return true;
+    }
+    // Named tunnel on a custom domain (e.g. https://mcp.example.com/mcp)
+    return u.hostname.includes('.') && !u.hostname.endsWith('.local');
   } catch {
     return false;
   }
@@ -117,15 +121,15 @@ export async function assertResourceForUser(userId: string, resource: string) {
     throw new OAuthError('invalid_target', 'Invalid MCP resource URL');
   }
 
-  // Quick tunnels rotate often — Claude may still hold a previous trycloudflare host.
-  // Accept any valid tunnel /mcp for this signed-in user; sync DB to Claude's resource.
+  // Quick tunnels rotate; named tunnels use a fixed hostname. Sync whatever Claude connected with.
   try {
     const u = new URL(normalized);
-    if (
+    const isTunnelHost =
       u.hostname.endsWith('.trycloudflare.com') ||
       u.hostname.endsWith('.cfargotunnel.com') ||
-      Boolean(process.env.TUNNEL_HOST_SUFFIX && u.hostname.endsWith(process.env.TUNNEL_HOST_SUFFIX))
-    ) {
+      Boolean(process.env.TUNNEL_HOST_SUFFIX && u.hostname.endsWith(process.env.TUNNEL_HOST_SUFFIX)) ||
+      (u.hostname.includes('.') && !u.hostname.endsWith('.local'));
+    if (isTunnelHost) {
       const { userConnections } = await import('@/lib/db/schema');
       const { ensureTunnelColumns } = await import('@/lib/db/ensure-tunnel');
       await ensureTunnelColumns();

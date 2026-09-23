@@ -42,12 +42,18 @@ function isValidTunnelUrl(raw: string): boolean {
   try {
     const u = new URL(raw);
     if (u.protocol !== 'https:') return false;
-    // Cloudflare quick tunnels + named tunnel hostnames
-    return (
+    // Quick tunnels + named Cloudflare tunnel hostnames (custom domain or *.cfargotunnel.com)
+    if (
       u.hostname.endsWith('.trycloudflare.com') ||
-      u.hostname.endsWith('.cfargotunnel.com') ||
-      Boolean(process.env.TUNNEL_HOST_SUFFIX && u.hostname.endsWith(process.env.TUNNEL_HOST_SUFFIX))
-    );
+      u.hostname.endsWith('.cfargotunnel.com')
+    ) {
+      return true;
+    }
+    if (process.env.TUNNEL_HOST_SUFFIX && u.hostname.endsWith(process.env.TUNNEL_HOST_SUFFIX)) {
+      return true;
+    }
+    // Named tunnel with user-owned domain (e.g. mcp.example.com) — authenticated Mac app only.
+    return u.hostname.includes('.') && !u.hostname.endsWith('.local');
   } catch {
     return false;
   }
