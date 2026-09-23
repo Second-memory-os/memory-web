@@ -6,6 +6,7 @@ import { decrypt } from '@/lib/crypto';
 import { auth } from '@/auth';
 import { mintApiAccessToken } from '@/lib/api-auth';
 import { ensureUserConnectionsSchema } from '@/lib/db/ensure-user-connections';
+import { resolveJwtSecret } from '@/lib/jwt-secret';
 import {
   detectAiProvider,
   providerBaseUrl,
@@ -36,7 +37,7 @@ export async function GET(request: NextRequest) {
   if (bearer) {
     try {
       const { jwtVerify } = await import('jose');
-      const secret = process.env.JWT_SECRET;
+      const secret = resolveJwtSecret();
       if (!secret) throw new Error('JWT_SECRET missing');
       const { payload } = await jwtVerify(bearer, new TextEncoder().encode(secret));
       userId = (payload.id as string) || (payload.sub as string) || null;
@@ -95,7 +96,18 @@ export async function GET(request: NextRequest) {
   const token = await mintApiAccessToken({ id: userId });
 
   // Public Dokploy/hosted API — Mac dials WSS here; Claude uses MCP_PUBLIC_URL/mcp.
-  const relayBaseUrl = (process.env.MCP_PUBLIC_URL || '').replace(/\/$/, '') || null;
+  // Prefer dedicated relay URL; never treat localhost as the cloud relay.
+  const rawRelay = (
+    process.env.RELAY_PUBLIC_URL ||
+    process.env.MCP_PUBLIC_URL ||
+    process.env.NEXT_PUBLIC_RELAY_URL ||
+    ''
+  ).replace(/\/$/, '');
+  const relayLooksLocal =
+    !rawRelay ||
+    /localhost|127\.0\.0\.1/i.test(rawRelay) ||
+    rawRelay.startsWith('http://');
+  const relayBaseUrl = relayLooksLocal ? null : rawRelay;
   const relayWsUrl = relayBaseUrl
     ? `${relayBaseUrl.replace(/^http/i, 'ws')}/tunnel/v1/agent`
     : null;
@@ -120,7 +132,7 @@ export async function GET(request: NextRequest) {
       visionModel: models.visionModel,
       chatModel: models.chatModel,
       embeddingModel: models.embeddingModel,
-      jwtSecret: process.env.JWT_SECRET || null,
+      jwtSecret: resolveJwtSecret() || null,
       encryptionKey: process.env.ENCRYPTION_KEY || null,
       authDatabaseUrl:
         process.env.AUTH_DATABASE_URL || process.env.DATABASE_URL || null,

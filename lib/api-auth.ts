@@ -1,4 +1,5 @@
 import { SignJWT } from 'jose';
+import { resolveJwtSecret } from '@/lib/jwt-secret';
 
 /** Mint a JWT the memory-server API accepts (must share JWT_SECRET). */
 export async function mintApiAccessToken(user: {
@@ -6,9 +7,9 @@ export async function mintApiAccessToken(user: {
   email?: string | null;
   name?: string | null;
 }) {
-  const secret = process.env.JWT_SECRET;
+  const secret = resolveJwtSecret();
   if (!secret) {
-    throw new Error('JWT_SECRET is not configured');
+    throw new Error('JWT_SECRET (or AUTH_SECRET) is not configured');
   }
 
   const key = new TextEncoder().encode(secret);

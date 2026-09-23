@@ -4,6 +4,7 @@ import {
   MCP_OAUTH_SCOPE,
   oauthIssuer,
 } from './config';
+import { resolveJwtSecret } from '@/lib/jwt-secret';
 
 /** Mint a short-lived MCP access JWT. `aud` MUST be the MCP resource URL. */
 export async function mintMcpAccessToken(input: {
@@ -14,8 +15,8 @@ export async function mintMcpAccessToken(input: {
   resource: string;
   scope?: string;
 }) {
-  const secret = process.env.JWT_SECRET;
-  if (!secret) throw new Error('JWT_SECRET is not configured');
+  const secret = resolveJwtSecret();
+  if (!secret) throw new Error('JWT_SECRET (or AUTH_SECRET) is not configured');
 
   const key = new TextEncoder().encode(secret);
   const scope = input.scope || MCP_OAUTH_SCOPE;
