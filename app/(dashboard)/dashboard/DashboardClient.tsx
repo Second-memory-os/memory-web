@@ -8,6 +8,9 @@ type Memory = {
   id: string;
   content: string;
   summary?: string | null;
+  heading?: string | null;
+  description?: string | null;
+  metadata?: { kind?: string } | null;
   createdAt: string;
 };
 
@@ -146,20 +149,30 @@ export default function DashboardClient({ connectionReady }: { connectionReady: 
           {title}
         </h3>
         <div className="space-y-3">
-          {memories.map((memory) => (
+          {memories.map((memory) => {
+            const heading = (memory.heading || '').trim();
+            const summary = (memory.summary || '').trim();
+            const content = (memory.content || '').trim();
+            const description = (memory.description || '').trim();
+            const isEpisode = memory.metadata?.kind === 'episode';
+            const headline = heading || summary || content;
+            const body = isEpisode ? summary || content : summary || description || content;
+            const detail = body && body !== headline ? body : '';
+            return (
             <article
               key={memory.id}
               className="rounded-xl border border-slate-200 bg-white p-4"
             >
-              <p className="text-slate-900 whitespace-pre-wrap">{memory.content}</p>
-              {memory.summary ? (
-                <p className="mt-2 text-sm text-slate-500">{memory.summary}</p>
+              <p className="text-slate-900 whitespace-pre-wrap">{headline}</p>
+              {detail ? (
+                <p className="mt-2 text-sm text-slate-500">{detail}</p>
               ) : null}
               <p className="mt-2 text-xs text-slate-400">
                 {new Date(memory.createdAt).toLocaleString()}
               </p>
             </article>
-          ))}
+            );
+          })}
         </div>
       </section>
     );
