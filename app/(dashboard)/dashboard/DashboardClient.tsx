@@ -3,6 +3,13 @@
 import { useCallback, useEffect, useState } from 'react';
 import Link from 'next/link';
 import LocalCoreOfflineBanner from '@/components/LocalCoreOfflineBanner';
+import TodayCard, { type TodayItem } from '@/components/active-state/TodayCard';
+import ActiveProjectsCard, { type ActiveProject } from '@/components/active-state/ActiveProjectsCard';
+import RecentDecisionsCard, { type DecisionItem } from '@/components/active-state/RecentDecisionsCard';
+import MemoryStatsCard, { type MemoryStats } from '@/components/active-state/MemoryStatsCard';
+import AIConnectionsCard, { type AiConnections } from '@/components/active-state/AIConnectionsCard';
+import WorkAlerts, { type WorkAlert } from '@/components/active-state/WorkAlerts';
+import WeeklyDigestCard from '@/components/active-state/WeeklyDigestCard';
 
 type Memory = {
   id: string;
@@ -12,6 +19,26 @@ type Memory = {
   description?: string | null;
   metadata?: { kind?: string } | null;
   createdAt: string;
+};
+
+type GraphLists = {
+  decisions: Array<{ id: string; name: string; description?: string | null }>;
+  commitments: Array<{ id: string; what: string; who?: string | null; when_due?: string | null }>;
+  preferences: Array<{ id: string; domain: string; preference: string }>;
+  workflows: Array<{ id: string; name: string; description?: string | null }>;
+  relationships: Array<{
+    source_name: string;
+    relation_type: string;
+    target_name: string;
+  }>;
+};
+
+const emptyGraph: GraphLists = {
+  decisions: [],
+  commitments: [],
+  preferences: [],
+  workflows: [],
+  relationships: [],
 };
 
 type GroupedMemories = {
@@ -58,7 +85,46 @@ function groupMemories(memories: Memory[]): GroupedMemories {
   return grouped;
 }
 
-export default function DashboardClient({ connectionReady }: { connectionReady: boolean }) {
+const emptyStats: MemoryStats = { memories: 0, people: 0, projects: 0, openLoops: 0 };
+const emptyConnections: AiConnections = {
+  claude: { connected: false, lastSync: null },
+  chatgpt: { connected: false, lastSync: null },
+  cursor: { connected: false, lastSync: null },
+};
+
+const WEEKDAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+const MONTHS = [
+  'January',
+  'February',
+  'March',
+  'April',
+  'May',
+  'June',
+  'July',
+  'August',
+  'September',
+  'October',
+  'November',
+  'December',
+];
+
+function homeDate(date: Date): string {
+  return `${WEEKDAYS[date.getDay()]}, ${MONTHS[date.getMonth()]} ${date.getDate()}`;
+}
+
+function greeting(name: string, date: Date): string {
+  const hour = date.getHours();
+  const hello = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening';
+  return `${hello}, ${name}.`;
+}
+
+export default function DashboardClient({
+  connectionReady,
+  userName,
+}: {
+  connectionReady: boolean;
+  userName: string;
+}) {
   const [content, setContent] = useState('');
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [saving, setSaving] = useState(false);
@@ -70,6 +136,19 @@ export default function DashboardClient({ connectionReady }: { connectionReady: 
     lastWeek: [],
     lastMonth: [],
   });
+  const [graph, setGraph] = useState<GraphLists>(emptyGraph);
+  const [todayItems, setTodayItems] = useState<TodayItem[]>([]);
+  const [projects, setProjects] = useState<ActiveProject[]>([]);
+  const [decisions, setDecisions] = useState<DecisionItem[]>([]);
+  const [stats, setStats] = useState<MemoryStats>(emptyStats);
+  const [connections, setConnections] = useState<AiConnections>(emptyConnections);
+  const [alerts, setAlerts] = useState<WorkAlert[]>([]);
+  const [dismissed, setDismissed] = useState<string[]>([]);
+  const [digest, setDigest] = useState<{
+    completed: string[];
+    needsAttention: string[];
+    patterns: string[];
+  } | null>(null);
 
   const loadTimeline = useCallback(async () => {
     if (!connectionReady) {
@@ -85,6 +164,32 @@ export default function DashboardClient({ connectionReady }: { connectionReady: 
         throw new Error(data.error || 'Failed to load timeline');
       }
       setGrouped(groupMemories(data.timeline || []));
+      const graphRes = await fetch('/api/graph');
+      if (graphRes.ok) {
+        const graphData = await graphRes.json();
+        setGraph({
+          decisions: graphData.decisions || [],
+          commitments: graphData.commitments || [],
+          preferences: graphData.preferences || [],
+          workflows: graphData.workflows || [],
+          relationships: graphData.relationships || [],
+        });
+      }
+      const stateRes = await fetch('/api/active-state');
+      if (stateRes.ok) {
+        const state = await stateRes.json();
+        setTodayItems(state.today || []);
+        setProjects(state.activeProjects || []);
+        setDecisions(state.recentDecisions || []);
+        setStats(state.stats || emptyStats);
+        setConnections(state.aiConnections || emptyConnections);
+      }
+      const workRes = await fetch('/api/work-intelligence');
+      if (workRes.ok) {
+        const work = await workRes.json();
+        setAlerts(work.alerts || []);
+        setDigest(work.digest || null);
+      }
     } catch (error) {
       setMessage({
         type: 'err',
@@ -97,6 +202,14 @@ export default function DashboardClient({ connectionReady }: { connectionReady: 
 
   useEffect(() => {
     loadTimeline();
+    const stored = window.localStorage.getItem('memoryos-dismissed-alerts');
+    if (stored) {
+      try {
+        setDismissed(JSON.parse(stored) as string[]);
+      } catch {
+        setDismissed([]);
+      }
+    }
   }, [loadTimeline]);
 
   const handleCapture = async () => {
@@ -181,13 +294,38 @@ export default function DashboardClient({ connectionReady }: { connectionReady: 
   return (
     <div className="space-y-10">
       <div>
-        <h1 className="text-3xl font-bold text-slate-900">Inbox</h1>
-        <p className="text-slate-600 mt-2">
-          Timeline of memories from the macOS menu bar agent and optional manual notes.
-        </p>
+        <p className="text-sm font-medium text-slate-500">{homeDate(new Date())}</p>
+        <h1 className="mt-1 text-3xl font-bold text-slate-900">{greeting(userName, new Date())}</h1>
       </div>
 
       <LocalCoreOfflineBanner />
+
+      <WorkAlerts
+        alerts={alerts.filter((alert) => !dismissed.includes(alert.id))}
+        onDismiss={(id) => {
+          const next = [...dismissed, id];
+          setDismissed(next);
+          window.localStorage.setItem('memoryos-dismissed-alerts', JSON.stringify(next));
+        }}
+        onCreateTask={(alert) => {
+          void fetch('/api/work-intelligence', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ text: alert.description }),
+          }).then(() => loadTimeline());
+        }}
+      />
+      <TodayCard items={todayItems} />
+      <div className="grid gap-4 md:grid-cols-2">
+        <ActiveProjectsCard projects={projects} />
+        <RecentDecisionsCard decisions={decisions} />
+        <MemoryStatsCard stats={stats} />
+        <AIConnectionsCard connections={connections} />
+        <WeeklyDigestCard digest={digest} />
+      </div>
+
+      <div>
+        <h2 className="text-2xl font-bold text-slate-900">Inbox</h2>
 
       <div className="rounded-xl border border-sky-200 bg-sky-50 px-4 py-3 text-sm text-sky-950">
         Primary capture runs in the <strong>MemoryOS menu bar app</strong>.{' '}
@@ -287,6 +425,13 @@ export default function DashboardClient({ connectionReady }: { connectionReady: 
           </div>
         </details>
       )}
+      </div>
+
+      <div>
+        <h2 className="text-2xl font-bold text-slate-900">What was learned</h2>
+        <p className="mt-1 text-slate-600">Decisions, promises, preferences, and connections. Not the raw timeline.</p>
+        <StructuredGrid graph={graph} />
+      </div>
 
       <div>
         <div className="mb-6 flex items-end justify-between gap-4">
@@ -323,6 +468,55 @@ export default function DashboardClient({ connectionReady }: { connectionReady: 
           </div>
         )}
       </div>
+    </div>
+  );
+}
+
+function StructuredGrid({ graph }: { graph: GraphLists }) {
+  const sections = [
+    { title: 'Decisions', items: graph.decisions.map((item) => item.name) },
+    {
+      title: 'Commitments',
+      items: graph.commitments.map((item) =>
+        item.who ? `${item.what} (${item.who})` : item.what
+      ),
+    },
+    {
+      title: 'Preferences',
+      items: graph.preferences.map((item) => `${item.domain}: ${item.preference}`),
+    },
+    {
+      title: 'Workflows',
+      items: graph.workflows.map((item) => item.name),
+    },
+    {
+      title: 'Relationships',
+      items: graph.relationships.map(
+        (item) => `${item.source_name} ${item.relation_type.replaceAll('_', ' ')} ${item.target_name}`
+      ),
+    },
+  ].filter((section) => section.items.length > 0);
+
+  if (sections.length === 0) {
+    return (
+      <p className="mt-4 rounded-xl border border-slate-200 bg-white px-4 py-6 text-sm text-slate-500">
+        Nothing structured yet. Decisions and promises show up here after a capture names them.
+      </p>
+    );
+  }
+
+  return (
+    <div className="mt-4 grid gap-3 md:grid-cols-2">
+      {sections.map((section) => (
+        <section key={section.title} className="rounded-xl border border-slate-200 bg-white p-4">
+          <h3 className="text-xs font-semibold uppercase tracking-wide text-slate-500">{section.title}</h3>
+          <ul className="mt-2 space-y-1 text-sm text-slate-900">
+            {section.items.slice(0, 6).map((item) => (
+              <li key={item}>{item}</li>
+            ))}
+          </ul>
+        </section>
+      ))}
     </div>
   );
 }

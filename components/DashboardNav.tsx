@@ -10,7 +10,7 @@ interface DashboardNavProps {
 
 export default function DashboardNav({ current = 'dashboard', userEmail }: DashboardNavProps) {
   const navItems = [
-    { id: 'dashboard', label: 'Timeline', href: '/dashboard' },
+    { id: 'dashboard', label: 'Home', href: '/dashboard' },
     { id: 'projects', label: 'Projects', href: '/projects' },
     { id: 'daily', label: 'Daily Summary', href: '/daily' },
     { id: 'settings', label: 'Settings', href: '/settings' },

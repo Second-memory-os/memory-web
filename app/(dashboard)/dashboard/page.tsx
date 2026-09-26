@@ -76,8 +76,11 @@ export default async function DashboardPage() {
       <div className="min-h-screen bg-slate-50">
         <DashboardNav current="dashboard" userEmail={session.user?.email} />
 
-        <main className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <DashboardClient connectionReady={connectionReady} />
+        <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <DashboardClient
+            connectionReady={connectionReady}
+            userName={session.user?.name?.split(' ')[0] || session.user?.email?.split('@')[0] || 'there'}
+          />
         </main>
       </div>
     );
