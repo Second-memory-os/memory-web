@@ -48,7 +48,7 @@ export default function Button(props: AsButton | AsLink) {
     .filter(Boolean)
     .join(' ');
 
-  if (props.href) {
+  if (props.href != null) {
     return (
       <Link href={props.href} className={className}>
         {props.children}
@@ -56,14 +56,22 @@ export default function Button(props: AsButton | AsLink) {
     );
   }
 
-  const { variant: _variant, size: _size, fullWidth: _full, pressed: _pressed, className: _class, href: _href, ...buttonProps } =
-    props;
+  const {
+    variant: _variant,
+    size: _size,
+    fullWidth: _full,
+    pressed: _pressed,
+    className: _class,
+    href: _href,
+    type = 'button',
+    ...buttonProps
+  } = props;
   return (
     <button
-      type={buttonProps.type ?? 'button'}
       aria-pressed={variant === 'toggle' ? Boolean(props.pressed) : undefined}
       className={className}
       {...buttonProps}
+      type={type}
     />
   );
 }
