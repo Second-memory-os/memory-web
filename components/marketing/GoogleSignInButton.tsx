@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { googleSignInAction } from '@/lib/actions/auth';
+import Button from '@/components/ui/Button';
 
 export function GoogleSignInButton({ callbackUrl = '/dashboard' }: { callbackUrl?: string }) {
   const [pending, setPending] = useState(false);
@@ -23,7 +24,7 @@ export function GoogleSignInButton({ callbackUrl = '/dashboard' }: { callbackUrl
 
   return (
     <div>
-      <button type="button" onClick={onClick} disabled={pending} className="mkt-btn-secondary">
+      <Button variant="secondary" fullWidth onClick={onClick} disabled={pending}>
         <svg width="18" height="18" viewBox="0 0 48 48" aria-hidden>
           <path
             fill="#EA4335"
@@ -42,8 +43,8 @@ export function GoogleSignInButton({ callbackUrl = '/dashboard' }: { callbackUrl
             d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"
           />
         </svg>
-        {pending ? 'Connecting…' : 'Continue with Google'}
-      </button>
+        {pending ? 'Connecting' : 'Continue with Google'}
+      </Button>
       {error ? <p className="mkt-error mt-3">{error}</p> : null}
     </div>
   );

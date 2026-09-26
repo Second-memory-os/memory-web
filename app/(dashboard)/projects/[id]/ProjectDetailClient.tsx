@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import Button from '@/components/ui/Button';
 import LocalFolderField from '@/components/LocalFolderField';
 
 export interface ProjectDetail {
@@ -336,33 +337,15 @@ export default function ProjectDetailClient({ projectId }: { projectId: string }
         </div>
 
         <div className="flex items-center gap-2">
-          <button
-            onClick={openEdit}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-slate-700 bg-white border border-slate-300 rounded-lg hover:bg-slate-50 transition-colors shadow-xs"
-          >
-            <svg className="w-3.5 h-3.5 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-            </svg>
-            Edit Project
-          </button>
-          <button
-            onClick={() => setShowAddDoc(true)}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-slate-700 bg-white border border-slate-300 rounded-lg hover:bg-slate-50 transition-colors shadow-xs"
-          >
-            <svg className="w-3.5 h-3.5 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" />
-            </svg>
-            Add Doc
-          </button>
-          <button
-            onClick={handleDeleteProject}
-            className="inline-flex items-center px-2.5 py-1.5 text-xs font-medium text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors"
-            title="Delete project"
-          >
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-            </svg>
-          </button>
+          <Button variant="secondary" size="sm" onClick={openEdit}>
+            Edit
+          </Button>
+          <Button variant="secondary" size="sm" onClick={() => setShowAddDoc(true)}>
+            Add doc
+          </Button>
+          <Button variant="danger" size="sm" onClick={handleDeleteProject} title="Delete project">
+            Delete
+          </Button>
         </div>
       </div>
 
@@ -487,17 +470,14 @@ export default function ProjectDetailClient({ projectId }: { projectId: string }
               { id: 'documents', label: `Documents (${documents.length})` },
             ] as const
           ).map((t) => (
-            <button
+            <Button
               key={t.id}
+              variant="toggle"
+              pressed={activeTab === t.id}
               onClick={() => setActiveTab(t.id)}
-              className={`pb-1 transition-colors relative ${
-                activeTab === t.id
-                  ? 'text-indigo-600 font-bold border-b-2 border-indigo-600'
-                  : 'text-slate-500 hover:text-slate-800'
-              }`}
             >
               {t.label}
-            </button>
+            </Button>
           ))}
         </div>
       </div>
@@ -538,14 +518,9 @@ export default function ProjectDetailClient({ projectId }: { projectId: string }
                   </svg>
                   Project status
                 </h2>
-                <button
-                  type="button"
-                  onClick={handleRefreshRelation}
-                  disabled={refreshing}
-                  className="text-xs font-semibold text-indigo-600 hover:text-indigo-800 disabled:opacity-50"
-                >
-                  {refreshing ? 'Scanning…' : 'Scan now'}
-                </button>
+                <Button variant="secondary" size="sm" onClick={handleRefreshRelation} disabled={refreshing}>
+                  {refreshing ? 'Scanning' : 'Scan now'}
+                </Button>
               </div>
               {snapshot ? (
                 <div className="space-y-3 text-sm text-slate-700">
@@ -738,12 +713,9 @@ export default function ProjectDetailClient({ projectId }: { projectId: string }
             <h2 className="text-base font-bold text-slate-900">
               Project Documents ({documents.length})
             </h2>
-            <button
-              onClick={() => setShowAddDoc(true)}
-              className="text-xs font-semibold text-indigo-600 hover:text-indigo-700 bg-indigo-50 px-3 py-1.5 rounded-lg border border-indigo-200"
-            >
-              + Upload / Add Document
-            </button>
+            <Button variant="secondary" size="sm" onClick={() => setShowAddDoc(true)}>
+              Add doc
+            </Button>
           </div>
 
           {documents.length === 0 ? (
@@ -779,12 +751,9 @@ export default function ProjectDetailClient({ projectId }: { projectId: string }
           <div className="bg-white rounded-2xl border border-slate-200 p-6 max-w-lg w-full shadow-xl space-y-4">
             <div className="flex justify-between items-center border-b border-slate-100 pb-3">
               <h3 className="text-base font-bold text-slate-900">Add Project Document</h3>
-              <button
-                onClick={() => setShowAddDoc(false)}
-                className="text-slate-400 hover:text-slate-600 text-lg font-bold"
-              >
-                &times;
-              </button>
+              <Button variant="ghost" size="sm" onClick={() => setShowAddDoc(false)}>
+                Close
+              </Button>
             </div>
 
             <form onSubmit={handleAddDocument} className="space-y-4">
@@ -827,20 +796,12 @@ export default function ProjectDetailClient({ projectId }: { projectId: string }
               </div>
 
               <div className="flex justify-end gap-2 pt-2 border-t border-slate-100">
-                <button
-                  type="button"
-                  onClick={() => setShowAddDoc(false)}
-                  className="px-4 py-1.5 text-xs font-semibold text-slate-600 hover:text-slate-800"
-                >
+                <Button variant="ghost" size="sm" onClick={() => setShowAddDoc(false)}>
                   Cancel
-                </button>
-                <button
-                  type="submit"
-                  disabled={savingDoc}
-                  className="px-4 py-1.5 text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg disabled:opacity-50"
-                >
-                  {savingDoc ? 'Saving...' : 'Save Document'}
-                </button>
+                </Button>
+                <Button type="submit" size="sm" disabled={savingDoc}>
+                  {savingDoc ? 'Saving' : 'Save document'}
+                </Button>
               </div>
             </form>
           </div>
@@ -853,12 +814,9 @@ export default function ProjectDetailClient({ projectId }: { projectId: string }
           <div className="bg-white rounded-2xl border border-slate-200 p-6 max-w-xl w-full shadow-xl space-y-4 my-8">
             <div className="flex justify-between items-center border-b border-slate-100 pb-3">
               <h3 className="text-base font-bold text-slate-900">Edit Project</h3>
-              <button
-                onClick={() => setShowEdit(false)}
-                className="text-slate-400 hover:text-slate-600 text-lg font-bold"
-              >
-                &times;
-              </button>
+              <Button variant="ghost" size="sm" onClick={() => setShowEdit(false)}>
+                Close
+              </Button>
             </div>
 
             {editError && (
@@ -980,20 +938,12 @@ export default function ProjectDetailClient({ projectId }: { projectId: string }
               </div>
 
               <div className="flex justify-end gap-2 pt-2 border-t border-slate-100">
-                <button
-                  type="button"
-                  onClick={() => setShowEdit(false)}
-                  className="px-4 py-1.5 text-xs font-semibold text-slate-600 hover:text-slate-800"
-                >
+                <Button variant="ghost" size="sm" onClick={() => setShowEdit(false)}>
                   Cancel
-                </button>
-                <button
-                  type="submit"
-                  disabled={savingEdit}
-                  className="px-4 py-1.5 text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg disabled:opacity-50"
-                >
-                  {savingEdit ? 'Saving...' : 'Save Changes'}
-                </button>
+                </Button>
+                <Button type="submit" size="sm" disabled={savingEdit}>
+                  {savingEdit ? 'Saving' : 'Save changes'}
+                </Button>
               </div>
             </form>
           </div>

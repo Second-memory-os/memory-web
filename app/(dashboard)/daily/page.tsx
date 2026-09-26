@@ -1,6 +1,6 @@
 import { auth } from '@/auth';
 import { redirect } from 'next/navigation';
-import DashboardNav from '@/components/DashboardNav';
+import AppFrame from '@/components/AppFrame';
 import DailyClient from './DailyClient';
 
 export default async function DailyPage() {
@@ -11,12 +11,8 @@ export default async function DailyPage() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50">
-      <DashboardNav current="daily" userEmail={session.user?.email} />
-
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <DailyClient />
-      </main>
-    </div>
+    <AppFrame current="daily" userEmail={session.user?.email}>
+      <DailyClient />
+    </AppFrame>
   );
 }

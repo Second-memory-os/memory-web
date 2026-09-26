@@ -4,6 +4,7 @@ import { useActionState } from 'react';
 import Link from 'next/link';
 import { signupAction, type AuthActionState } from '@/lib/actions/auth';
 import { AuthShell } from '@/components/marketing/AuthShell';
+import Button from '@/components/ui/Button';
 
 const initialState: AuthActionState = {};
 
@@ -72,9 +73,9 @@ export default function SignupPage() {
 
         {state.error ? <p className="mkt-error">{state.error}</p> : null}
 
-        <button type="submit" disabled={pending} className="mkt-btn-primary">
-          {pending ? 'Creating…' : 'Create account'}
-        </button>
+        <Button type="submit" disabled={pending} fullWidth>
+          {pending ? 'Creating' : 'Create account'}
+        </Button>
 
         <p className="text-center text-xs leading-relaxed text-[var(--mkt-muted)]">
           By continuing you agree to our{' '}

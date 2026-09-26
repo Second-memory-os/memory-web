@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import Button from '@/components/ui/Button';
 
 type Props = {
   value: string;
@@ -119,14 +120,9 @@ export default function LocalFolderField({ value, onChange, id, disabled }: Prop
           placeholder="/Users/yourname/Projects/memory-ai"
           className="flex-1 min-w-0 px-3.5 py-2 text-sm font-mono bg-white border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 focus:outline-none disabled:opacity-60"
         />
-        <button
-          type="button"
-          onClick={() => void browse()}
-          disabled={disabled || picking}
-          className="shrink-0 px-3 py-2 text-sm font-semibold text-slate-700 bg-white border border-slate-300 rounded-lg hover:bg-slate-50 transition-colors disabled:opacity-50"
-        >
-          {picking ? 'Opening…' : 'Browse…'}
-        </button>
+        <Button variant="secondary" size="sm" onClick={() => void browse()} disabled={disabled || picking}>
+          {picking ? 'Opening' : 'Browse'}
+        </Button>
       </div>
       <p className="text-[11px] text-slate-500">
         When Cursor or VS Code shows this folder in the window title, captures are linked to this

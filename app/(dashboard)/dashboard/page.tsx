@@ -6,7 +6,7 @@ import { userConnections } from '@/lib/db/schema';
 import { ensureManagedMemoryConnection } from '@/lib/memory-provisioning';
 import { isSelfHostedProvider } from '@/lib/ai-models';
 import { ensureUserConnectionsSchema } from '@/lib/db/ensure-user-connections';
-import DashboardNav from '@/components/DashboardNav';
+import AppFrame from '@/components/AppFrame';
 import DashboardClient from './DashboardClient';
 
 function DashboardError({ detail }: { detail: string }) {
@@ -45,7 +45,13 @@ function DashboardError({ detail }: { detail: string }) {
   );
 }
 
-export default async function DashboardPage() {
+export default async function DashboardPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ view?: string }>;
+}) {
+  const params = await searchParams;
+  const view = params.view === 'timeline' || params.view === 'learned' ? params.view : 'home';
   try {
     const session = await auth();
 
@@ -73,16 +79,13 @@ export default async function DashboardPage() {
     );
 
     return (
-      <div className="min-h-screen bg-slate-50">
-        <DashboardNav current="dashboard" userEmail={session.user?.email} />
-
-        <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <DashboardClient
-            connectionReady={connectionReady}
-            userName={session.user?.name?.split(' ')[0] || session.user?.email?.split('@')[0] || 'there'}
-          />
-        </main>
-      </div>
+      <AppFrame current="dashboard" userEmail={session.user?.email}>
+        <DashboardClient
+          connectionReady={connectionReady}
+          userName={session.user?.name?.split(' ')[0] || session.user?.email?.split('@')[0] || 'there'}
+          view={view}
+        />
+      </AppFrame>
     );
   } catch (error) {
     // next/navigation redirect throws; rethrow so Next can handle it

@@ -1,5 +1,7 @@
 'use client';
 
+import Button from '@/components/ui/Button';
+
 export type WorkAlert = {
   id: string;
   kind: 'stalled' | 'overdue' | 'stale' | 'blocked' | 'deviation';
@@ -32,21 +34,13 @@ export default function WorkAlerts({
           <p className="mt-1 text-sm text-slate-700">{alert.description}</p>
           <div className="mt-3 flex gap-2">
             {alert.kind === 'stalled' || alert.kind === 'overdue' ? (
-              <button
-                type="button"
-                onClick={() => onCreateTask(alert)}
-                className="rounded-lg bg-slate-900 px-3 py-1.5 text-xs font-semibold text-white"
-              >
+              <Button size="sm" onClick={() => onCreateTask(alert)}>
                 Create task
-              </button>
+              </Button>
             ) : null}
-            <button
-              type="button"
-              onClick={() => onDismiss(alert.id)}
-              className="rounded-lg px-3 py-1.5 text-xs font-medium text-slate-600 hover:bg-white"
-            >
+            <Button variant="ghost" size="sm" onClick={() => onDismiss(alert.id)}>
               Dismiss
-            </button>
+            </Button>
           </div>
         </section>
       ))}

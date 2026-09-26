@@ -1,11 +1,10 @@
 import { auth } from '@/auth';
 import { redirect } from 'next/navigation';
-import Link from 'next/link';
 import path from 'path';
 import { getSettingsState } from '@/lib/actions/settings';
 import { ensureManagedMemoryConnection } from '@/lib/memory-provisioning';
 import { buildMcpConfig, buildMcpTestCommands, resolveNodeBin } from '@/lib/mcp-config';
-import DashboardNav from '@/components/DashboardNav';
+import AppFrame from '@/components/AppFrame';
 import SettingsForms from './SettingsForms';
 
 function resolveNodeBinLegacy() {
@@ -57,14 +56,11 @@ export default async function SettingsPage() {
   });
 
   return (
-    <div className="min-h-screen bg-slate-50">
-      <DashboardNav current="settings" userEmail={session.user?.email} />
-
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-slate-900">Settings</h1>
-          <p className="text-slate-600 mt-2">
-            Configure your memory database, AI provider, MCP, and macOS agent
+    <AppFrame current="settings" userEmail={session.user?.email}>
+        <div className="mb-10">
+          <h1 className="font-[family-name:var(--font-display)] text-4xl font-medium tracking-tight">Settings</h1>
+          <p className="mt-2 max-w-xl text-sm text-[var(--mkt-muted)]">
+            Database, model, and the apps allowed to read your memory.
           </p>
         </div>
 
@@ -93,7 +89,6 @@ export default async function SettingsPage() {
           localFirst={localFirst}
           webAppUrl={process.env.NEXTAUTH_URL || process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}
         />
-      </main>
-    </div>
+    </AppFrame>
   );
 }

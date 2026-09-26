@@ -1,6 +1,6 @@
 import { auth } from '@/auth';
 import { redirect } from 'next/navigation';
-import DashboardNav from '@/components/DashboardNav';
+import AppFrame from '@/components/AppFrame';
 import ProjectDetailClient from './ProjectDetailClient';
 
 export default async function ProjectDetailPage({
@@ -17,12 +17,8 @@ export default async function ProjectDetailPage({
   const { id } = await params;
 
   return (
-    <div className="min-h-screen bg-slate-50">
-      <DashboardNav current="projects" userEmail={session.user?.email} />
-
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <ProjectDetailClient projectId={id} />
-      </main>
-    </div>
+    <AppFrame current="projects" userEmail={session.user?.email}>
+      <ProjectDetailClient projectId={id} />
+    </AppFrame>
   );
 }

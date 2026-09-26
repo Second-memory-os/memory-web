@@ -1,6 +1,7 @@
 'use client';
 
 import { useActionState, useCallback, useEffect, useState } from 'react';
+import Button from '@/components/ui/Button';
 import {
   saveOpenaiKey,
   type SettingsActionState,
@@ -84,13 +85,9 @@ function CodeBlock({
     <div className="mt-3">
       <div className="mb-2 flex items-center justify-between gap-3">
         <p className="text-sm font-medium text-slate-900">{title}</p>
-        <button
-          type="button"
-          onClick={() => onCopy(copyKey, value)}
-          className="shrink-0 rounded-lg bg-slate-900 px-3 py-1.5 text-xs font-medium text-white hover:bg-slate-800"
-        >
-          {copiedKey === copyKey ? 'Copied' : 'Copy JSON'}
-        </button>
+        <Button size="sm" onClick={() => onCopy(copyKey, value)}>
+          {copiedKey === copyKey ? 'Copied' : 'Copy'}
+        </Button>
       </div>
       <div className="overflow-hidden rounded-lg border border-slate-300 bg-white">
         <pre className="overflow-x-auto whitespace-pre-wrap p-4 font-mono text-xs leading-relaxed text-slate-900">
@@ -252,7 +249,7 @@ export default function SettingsForms({
 
   return (
     <div className="space-y-6 text-slate-900">
-      <div className="bg-white rounded-lg border border-slate-200 p-6">
+      <div className="border-b border-[var(--mkt-line)] py-8">
         <div className="flex items-start justify-between gap-4 mb-4">
           <div>
             <h2 className="text-xl font-semibold text-slate-900">Memory database</h2>
@@ -287,7 +284,7 @@ export default function SettingsForms({
         )}
       </div>
 
-      <div className="bg-white rounded-lg border border-slate-200 p-6">
+      <div className="border-b border-[var(--mkt-line)] py-8">
         <h2 className="text-xl font-semibold text-slate-900 mb-1">AI Configuration</h2>
         <p className="text-slate-600 mb-4">
           Add your own provider key, or point MemoryOS at a model you run yourself with Ollama or
@@ -389,14 +386,9 @@ export default function SettingsForms({
                       } key`}
                 </p>
               </div>
-              <button
-                type="button"
-                onClick={() => void loadModels()}
-                disabled={modelsLoading || !aiConfigured}
-                className="shrink-0 rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-100 disabled:opacity-50"
-              >
-                {modelsLoading ? 'Loading…' : 'Refresh models'}
-              </button>
+              <Button variant="secondary" size="sm" onClick={() => void loadModels()} disabled={modelsLoading || !aiConfigured}>
+                {modelsLoading ? 'Loading' : 'Refresh models'}
+              </Button>
             </div>
 
             {modelsError && (
@@ -521,17 +513,13 @@ export default function SettingsForms({
 
           <StatusBanner state={saveAiState} />
 
-          <button
-            type="submit"
-            disabled={saveAiPending}
-            className="px-4 py-2 bg-slate-900 text-white rounded-lg hover:bg-slate-800 transition disabled:opacity-50"
-          >
-            {saveAiPending ? 'Saving…' : 'Save AI key & models'}
-          </button>
+          <Button type="submit" disabled={saveAiPending}>
+            {saveAiPending ? 'Saving' : 'Save AI key and models'}
+          </Button>
         </form>
       </div>
 
-      <div className="bg-white rounded-lg border border-slate-200 p-6">
+      <div className="border-b border-[var(--mkt-line)] py-8">
         <h2 className="text-xl font-semibold text-slate-900 mb-1">macOS Menu Bar</h2>
         <p className="text-slate-600 mb-3">
           Install MemoryOS Desktop to capture active-window context. Sign-in opens this site, then
@@ -557,7 +545,7 @@ export default function SettingsForms({
         </ul>
       </div>
 
-      <div id="mcp-configuration" className="bg-white rounded-lg border border-slate-200 p-6 scroll-mt-6">
+      <div id="mcp-configuration" className="border-b border-[var(--mkt-line)] py-8 scroll-mt-6">
         <h2 className="text-xl font-semibold text-slate-900 mb-1">MCP Configuration</h2>
         <p className="text-slate-600 mb-4">
           MemoryOS MCP v2 uses two lanes: <strong>timeline</strong> (macOS capture) and{' '}
@@ -662,13 +650,9 @@ export default function SettingsForms({
               Authorization: {showToken ? authHeader : 'Bearer ••••••••'}
             </code>
             {remoteMcpTokenConfigured ? (
-              <button
-                type="button"
-                onClick={() => setShowToken((v) => !v)}
-                className="ml-2 text-xs underline underline-offset-2"
-              >
+              <Button variant="ghost" size="sm" onClick={() => setShowToken((v) => !v)}>
                 {showToken ? 'Hide token' : 'Show token'}
-              </button>
+              </Button>
             ) : (
               <span className="ml-2 text-amber-800">(MCP_API_TOKEN missing — OK if OAuth-only)</span>
             )}

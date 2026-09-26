@@ -2,14 +2,15 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import Link from 'next/link';
+import Button from '@/components/ui/Button';
 import LocalCoreOfflineBanner from '@/components/LocalCoreOfflineBanner';
-import TodayCard, { type TodayItem } from '@/components/active-state/TodayCard';
-import ActiveProjectsCard, { type ActiveProject } from '@/components/active-state/ActiveProjectsCard';
-import RecentDecisionsCard, { type DecisionItem } from '@/components/active-state/RecentDecisionsCard';
-import MemoryStatsCard, { type MemoryStats } from '@/components/active-state/MemoryStatsCard';
+import { type ActiveProject } from '@/components/active-state/ActiveProjectsCard';
+import { type DecisionItem } from '@/components/active-state/RecentDecisionsCard';
+import { type MemoryStats } from '@/components/active-state/MemoryStatsCard';
 import AIConnectionsCard, { type AiConnections } from '@/components/active-state/AIConnectionsCard';
-import WorkAlerts, { type WorkAlert } from '@/components/active-state/WorkAlerts';
+import { type WorkAlert } from '@/components/active-state/WorkAlerts';
 import WeeklyDigestCard from '@/components/active-state/WeeklyDigestCard';
+import { type TodayItem } from '@/components/active-state/TodayCard';
 
 type Memory = {
   id: string;
@@ -121,9 +122,11 @@ function greeting(name: string, date: Date): string {
 export default function DashboardClient({
   connectionReady,
   userName,
+  view,
 }: {
   connectionReady: boolean;
   userName: string;
+  view: 'home' | 'timeline' | 'learned';
 }) {
   const [content, setContent] = useState('');
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -258,9 +261,7 @@ export default function DashboardClient({
     if (memories.length === 0) return null;
     return (
       <section className="mb-8">
-        <h3 className="text-sm font-semibold uppercase tracking-wide text-slate-500 mb-3">
-          {title}
-        </h3>
+        <h3 className="mb-3 text-xs uppercase tracking-[0.14em] text-[var(--mkt-muted)]">{title}</h3>
         <div className="space-y-3">
           {memories.map((memory) => {
             const heading = (memory.heading || '').trim();
@@ -272,17 +273,10 @@ export default function DashboardClient({
             const body = isEpisode ? summary || content : summary || description || content;
             const detail = body && body !== headline ? body : '';
             return (
-            <article
-              key={memory.id}
-              className="rounded-xl border border-slate-200 bg-white p-4"
-            >
-              <p className="text-slate-900 whitespace-pre-wrap">{headline}</p>
-              {detail ? (
-                <p className="mt-2 text-sm text-slate-500">{detail}</p>
-              ) : null}
-              <p className="mt-2 text-xs text-slate-400">
-                {new Date(memory.createdAt).toLocaleString()}
-              </p>
+            <article key={memory.id} className="border-b border-[var(--mkt-line)] py-4">
+              <p className="text-[var(--mkt-ink)] whitespace-pre-wrap">{headline}</p>
+              {detail ? <p className="mt-1 text-sm text-[var(--mkt-muted)]">{detail}</p> : null}
+              <p className="mt-2 text-xs text-[var(--mkt-muted)]">{new Date(memory.createdAt).toISOString().slice(0, 10)}</p>
             </article>
             );
           })}
@@ -291,183 +285,189 @@ export default function DashboardClient({
     );
   };
 
+  const now = new Date();
+  const visibleAlerts = alerts.filter((alert) => !dismissed.includes(alert.id)).slice(0, 3);
+  const pageTitle =
+    view === 'timeline' ? 'Timeline' : view === 'learned' ? 'Learned' : greeting(userName, now);
+
   return (
-    <div className="space-y-10">
-      <div>
-        <p className="text-sm font-medium text-slate-500">{homeDate(new Date())}</p>
-        <h1 className="mt-1 text-3xl font-bold text-slate-900">{greeting(userName, new Date())}</h1>
-      </div>
+    <div>
+      <p className="text-sm text-[var(--mkt-muted)]">{view === 'home' ? homeDate(now) : 'MemoryOS'}</p>
+      <h1 className="mt-2 font-[family-name:var(--font-display)] text-4xl font-medium tracking-tight text-[var(--mkt-ink)]">
+        {pageTitle}
+      </h1>
 
       <LocalCoreOfflineBanner />
 
-      <WorkAlerts
-        alerts={alerts.filter((alert) => !dismissed.includes(alert.id))}
-        onDismiss={(id) => {
-          const next = [...dismissed, id];
-          setDismissed(next);
-          window.localStorage.setItem('memoryos-dismissed-alerts', JSON.stringify(next));
-        }}
-        onCreateTask={(alert) => {
-          void fetch('/api/work-intelligence', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ text: alert.description }),
-          }).then(() => loadTimeline());
-        }}
-      />
-      <TodayCard items={todayItems} />
-      <div className="grid gap-4 md:grid-cols-2">
-        <ActiveProjectsCard projects={projects} />
-        <RecentDecisionsCard decisions={decisions} />
-        <MemoryStatsCard stats={stats} />
-        <AIConnectionsCard connections={connections} />
-        <WeeklyDigestCard digest={digest} />
-      </div>
-
-      <div>
-        <h2 className="text-2xl font-bold text-slate-900">Inbox</h2>
-
-      <div className="rounded-xl border border-sky-200 bg-sky-50 px-4 py-3 text-sm text-sky-950">
-        Primary capture runs in the <strong>MemoryOS menu bar app</strong>.{' '}
-        <a
-          href="/downloads/MemoryOS.dmg"
-          download
-          className="inline-flex items-center gap-1.5 font-semibold underline underline-offset-2 hover:text-sky-800"
-        >
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/brand/memoryos-icon.png" alt="" width={16} height={16} className="rounded-[3px]" />
-          Download for Mac
-        </a>
-        , open it, sign in, and grant Screen Recording. Use the form below only for quick manual notes.
-      </div>
-
-      {!connectionReady ? (
-        <div className="rounded-xl border border-amber-200 bg-amber-50 p-6">
-          <p className="text-amber-900 font-medium">Setup required</p>
-          <p className="text-amber-800 mt-1 text-sm">
-            Add your OpenRouter or OpenAI API key in Settings so memories can be processed. Capture
-            data is stored in the public Postgres schema.
-          </p>
-          <Link
-            href="/settings"
-            className="mt-4 inline-block px-4 py-2 bg-slate-900 text-white rounded-lg text-sm"
-          >
-            Open Settings
-          </Link>
-        </div>
-      ) : (
-        <details className="rounded-xl border border-slate-200 bg-white p-5 group">
-          <summary className="cursor-pointer text-sm font-medium text-slate-700 list-none flex items-center justify-between">
-            <span>Manual capture (optional)</span>
-            <span className="text-slate-400 group-open:hidden">Show</span>
-            <span className="text-slate-400 hidden group-open:inline">Hide</span>
-          </summary>
-          <div className="mt-4 space-y-4">
-          <textarea
-            value={content}
-            onChange={(e) => setContent(e.target.value)}
-            placeholder="What's on your mind?"
-            className="w-full min-h-28 resize-y border-0 outline-none text-base text-slate-900 placeholder:text-slate-400"
-            onKeyDown={(e) => {
-              if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
-                e.preventDefault();
-                void handleCapture();
-              }
-            }}
-          />
-
-          {selectedFile ? (
-            <div className="flex items-center justify-between rounded-lg bg-slate-50 px-3 py-2 text-sm text-slate-700">
-              <span>
-                {selectedFile.name} ({(selectedFile.size / 1024).toFixed(1)} KB)
-              </span>
-              <button
-                type="button"
-                onClick={() => setSelectedFile(null)}
-                className="text-slate-500 hover:text-slate-900"
-              >
-                Remove
-              </button>
-            </div>
-          ) : null}
-
-          {message ? (
-            <p
-              className={`text-sm rounded-lg px-3 py-2 ${
-                message.type === 'ok'
-                  ? 'bg-emerald-50 text-emerald-800 border border-emerald-200'
-                  : 'bg-red-50 text-red-800 border border-red-200'
-              }`}
-            >
-              {message.text}
+      {view === 'home' ? (
+        <div className="mt-12 grid items-start gap-16 lg:grid-cols-[minmax(0,1.45fr)_18rem]">
+          <section>
+            {visibleAlerts.length > 0 ? (
+              <ul className="mb-8 space-y-4">
+                {visibleAlerts.map((alert) => (
+                  <li key={alert.id} className="text-sm">
+                    <p className="text-[var(--mkt-ink)]">{alert.title}</p>
+                    <p className="mt-1 text-[var(--mkt-muted)]">{alert.description}</p>
+                    <div className="mt-2 flex gap-4 text-xs">
+                      {alert.kind === 'stalled' || alert.kind === 'overdue' ? (
+                        <Button
+                          size="sm"
+                          onClick={() => {
+                            void fetch('/api/work-intelligence', {
+                              method: 'POST',
+                              headers: { 'Content-Type': 'application/json' },
+                              body: JSON.stringify({ text: alert.description }),
+                            }).then(() => loadTimeline());
+                          }}
+                        >
+                          Create task
+                        </Button>
+                      ) : null}
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => {
+                          const next = [...dismissed, alert.id];
+                          setDismissed(next);
+                          window.localStorage.setItem('memoryos-dismissed-alerts', JSON.stringify(next));
+                        }}
+                      >
+                        Dismiss
+                      </Button>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            ) : null}
+            <p className="text-xs tracking-[0.14em] text-[var(--mkt-muted)] uppercase">Today</p>
+            <p className="mt-3 text-lg text-[var(--mkt-ink)]">
+              {todayItems.length === 0
+                ? 'Nothing is waiting on you.'
+                : `${todayItems.length} ${todayItems.length === 1 ? 'thing needs' : 'things need'} attention`}
             </p>
-          ) : null}
-
-          <div className="flex items-center justify-between border-t border-slate-100 pt-4">
-            <label className="cursor-pointer rounded-lg bg-slate-100 px-3 py-2 text-sm text-slate-700 hover:bg-slate-200">
-              Attach file
-              <input
-                type="file"
-                className="hidden"
-                accept="image/*,audio/*,.pdf,.doc,.docx,.txt"
-                onChange={(e) => setSelectedFile(e.target.files?.[0] ?? null)}
-              />
-            </label>
-            <button
-              type="button"
-              onClick={() => void handleCapture()}
-              disabled={saving || (!content.trim() && !selectedFile)}
-              className="rounded-lg bg-slate-900 px-5 py-2 text-sm font-semibold text-white hover:bg-slate-800 disabled:opacity-50"
-            >
-              {saving ? 'Saving…' : 'Save (⌘↵)'}
-            </button>
-          </div>
-          </div>
-        </details>
-      )}
-      </div>
-
-      <div>
-        <h2 className="text-2xl font-bold text-slate-900">What was learned</h2>
-        <p className="mt-1 text-slate-600">Decisions, promises, preferences, and connections. Not the raw timeline.</p>
-        <StructuredGrid graph={graph} />
-      </div>
-
-      <div>
-        <div className="mb-6 flex items-end justify-between gap-4">
-          <div>
-            <h2 className="text-2xl font-bold text-slate-900">Timeline</h2>
-            <p className="text-slate-600 mt-1">Your recent memories</p>
-          </div>
-          <button
-            type="button"
-            onClick={() => void loadTimeline()}
-            className="text-sm text-slate-500 hover:text-slate-900"
-          >
-            Refresh
-          </button>
+            {todayItems.length > 0 ? (
+              <ul className="mt-6 border-y border-[var(--mkt-line)]">
+                {todayItems.map((item) => (
+                  <li key={item.id} className="flex items-baseline justify-between gap-6 border-b border-[var(--mkt-line)] py-3 text-sm last:border-b-0">
+                    <span>{item.text}</span>
+                    <span className={item.reason === 'overdue' || item.reason === 'due-today' ? 'text-[var(--mkt-accent)]' : 'text-[var(--mkt-muted)]'}>
+                      {item.reason === 'due-today' ? 'Due' : item.reason === 'overdue' ? 'Overdue' : item.reason === 'stale' ? 'Quiet' : item.reason === 'repeated' ? 'Again' : 'New'}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            ) : null}
+            <p className="mt-8 flex gap-5 text-sm">
+              <Link href="/dashboard?view=timeline" className="underline decoration-[var(--mkt-line)] underline-offset-4">
+                Timeline
+              </Link>
+              <Link href="/dashboard?view=learned" className="underline decoration-[var(--mkt-line)] underline-offset-4">
+                Learned
+              </Link>
+            </p>
+          </section>
+          <aside className="space-y-10 border-t border-[var(--mkt-line)] pt-8 text-sm lg:border-t-0 lg:border-l lg:pt-0 lg:pl-8">
+            <div>
+              <p className="text-xs uppercase tracking-[0.14em] text-[var(--mkt-muted)]">Active</p>
+              <ul className="mt-3 space-y-2">
+                {projects.slice(0, 3).map((project) => (
+                  <li key={project.id}>
+                    <Link href={`/projects/${project.id}`} className="hover:text-[var(--mkt-accent)]">
+                      {project.name}
+                    </Link>
+                  </li>
+                ))}
+                {projects.length === 0 ? <li className="text-[var(--mkt-muted)]">No project this week</li> : null}
+              </ul>
+            </div>
+            <div>
+              <p className="text-xs uppercase tracking-[0.14em] text-[var(--mkt-muted)]">Decision</p>
+              <p className="mt-3">{decisions[0]?.name || 'None this week'}</p>
+              {decisions[0]?.description ? (
+                <p className="mt-1 text-[var(--mkt-muted)]">{decisions[0].description}</p>
+              ) : null}
+            </div>
+            <p className="text-[var(--mkt-muted)]">
+              <Link href="/dashboard?view=timeline">{stats.memories} memories</Link>
+              {' · '}
+              {stats.people} people
+              {' · '}
+              <Link href="/projects">{stats.projects} projects</Link>
+              {' · '}
+              {stats.openLoops} open loops
+            </p>
+          </aside>
         </div>
+      ) : null}
 
-        {loading ? (
-          <p className="py-12 text-center text-slate-500">Loading…</p>
-        ) : !connectionReady ? (
-          <p className="py-12 text-center text-slate-500">
-            Configure Settings to start capturing memories.
-          </p>
-        ) : total === 0 ? (
-          <div className="rounded-xl border border-slate-200 bg-white py-12 text-center text-slate-500">
-            <p className="text-lg">No memories yet</p>
-            <p className="mt-2 text-sm">Capture something above to see it here.</p>
+      {view === 'learned' ? (
+        <div className="mt-12">
+          <StructuredGrid graph={graph} />
+          <div className="mt-10">
+            <WeeklyDigestCard digest={digest} />
           </div>
-        ) : (
-          <div>
-            {renderGroup('Today', grouped.today)}
-            {renderGroup('Yesterday', grouped.yesterday)}
-            {renderGroup('Last week', grouped.lastWeek)}
-            {renderGroup('Last month', grouped.lastMonth)}
-          </div>
-        )}
-      </div>
+        </div>
+      ) : null}
+
+      {view === 'timeline' ? (
+        <div className="mt-12 space-y-12">
+          {!connectionReady ? (
+            <p className="text-sm">
+              Add a model key in <Link href="/settings" className="underline">Settings</Link> before capturing notes.
+            </p>
+          ) : (
+            <details className="group">
+              <summary className="cursor-pointer text-sm text-[var(--mkt-muted)]">Add a note</summary>
+              <div className="mt-4 space-y-4">
+                <textarea
+                  value={content}
+                  onChange={(e) => setContent(e.target.value)}
+                  placeholder="What's on your mind?"
+                  className="mkt-input min-h-28 resize-y"
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
+                      e.preventDefault();
+                      void handleCapture();
+                    }
+                  }}
+                />
+                {message ? <p className="text-sm text-[var(--mkt-muted)]">{message.text}</p> : null}
+                <div className="flex items-center justify-between">
+                  <label className="cursor-pointer text-sm text-[var(--mkt-muted)]">
+                    {selectedFile ? selectedFile.name : 'Attach a file'}
+                    <input
+                      type="file"
+                      className="hidden"
+                      accept="image/*,audio/*,.pdf,.doc,.docx,.txt"
+                      onChange={(e) => setSelectedFile(e.target.files?.[0] ?? null)}
+                    />
+                  </label>
+                  <Button
+                    size="sm"
+                    onClick={() => void handleCapture()}
+                    disabled={saving || (!content.trim() && !selectedFile)}
+                  >
+                    {saving ? 'Saving' : 'Save'}
+                  </Button>
+                </div>
+              </div>
+            </details>
+          )}
+          {loading ? (
+            <p className="text-sm text-[var(--mkt-muted)]">Loading</p>
+          ) : total === 0 ? (
+            <p className="text-sm text-[var(--mkt-muted)]">No memories yet.</p>
+          ) : (
+            <div>
+              {renderGroup('Today', grouped.today)}
+              {renderGroup('Yesterday', grouped.yesterday)}
+              {renderGroup('Last week', grouped.lastWeek)}
+              {renderGroup('Last month', grouped.lastMonth)}
+            </div>
+          )}
+          <AIConnectionsCard connections={connections} />
+        </div>
+      ) : null}
     </div>
   );
 }
@@ -506,11 +506,11 @@ function StructuredGrid({ graph }: { graph: GraphLists }) {
   }
 
   return (
-    <div className="mt-4 grid gap-3 md:grid-cols-2">
+    <div className="space-y-8">
       {sections.map((section) => (
-        <section key={section.title} className="rounded-xl border border-slate-200 bg-white p-4">
-          <h3 className="text-xs font-semibold uppercase tracking-wide text-slate-500">{section.title}</h3>
-          <ul className="mt-2 space-y-1 text-sm text-slate-900">
+        <section key={section.title}>
+          <h2 className="text-xs uppercase tracking-[0.14em] text-[var(--mkt-muted)]">{section.title}</h2>
+          <ul className="mt-3 space-y-2 text-sm">
             {section.items.slice(0, 6).map((item) => (
               <li key={item}>{item}</li>
             ))}

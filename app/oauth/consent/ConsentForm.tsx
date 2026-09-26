@@ -1,6 +1,7 @@
 'use client';
 
 import { useActionState } from 'react';
+import Button from '@/components/ui/Button';
 import {
   approveMcpConsentAction,
   type ConsentState,
@@ -39,24 +40,12 @@ export default function ConsentForm(props: Props) {
         </p>
       ) : null}
 
-      <button
-        type="submit"
-        name="decision"
-        value="approve"
-        disabled={pending}
-        className="w-full rounded-lg bg-slate-900 px-4 py-2.5 text-sm font-medium text-white hover:bg-slate-800 disabled:opacity-60"
-      >
-        {pending ? 'Connecting…' : 'Allow access'}
-      </button>
-      <button
-        type="submit"
-        name="decision"
-        value="deny"
-        disabled={pending}
-        className="w-full rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-sm font-medium text-slate-800 hover:bg-slate-50 disabled:opacity-60"
-      >
+      <Button type="submit" name="decision" value="approve" disabled={pending} fullWidth>
+        {pending ? 'Connecting' : 'Allow access'}
+      </Button>
+      <Button type="submit" name="decision" value="deny" disabled={pending} variant="danger" fullWidth>
         Deny
-      </button>
+      </Button>
     </form>
   );
 }

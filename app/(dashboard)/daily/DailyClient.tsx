@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
+import Button from '@/components/ui/Button';
 
 export interface DailyProjectItem {
   project: {
@@ -30,14 +31,6 @@ export interface DailySummaryData {
   totalDecisions: number;
   totalOpenLoops: number;
 }
-
-const MOMENTUM_COLORS: Record<string, { badge: string; dot: string; text: string }> = {
-  high: { badge: 'bg-emerald-50 text-emerald-700 border-emerald-200', dot: 'bg-emerald-500 animate-pulse', text: 'text-emerald-700' },
-  moderate: { badge: 'bg-blue-50 text-blue-700 border-blue-200', dot: 'bg-blue-500', text: 'text-blue-700' },
-  low: { badge: 'bg-amber-50 text-amber-700 border-amber-200', dot: 'bg-amber-500', text: 'text-amber-700' },
-  stalled: { badge: 'bg-rose-50 text-rose-700 border-rose-200', dot: 'bg-rose-500', text: 'text-rose-700' },
-  new: { badge: 'bg-indigo-50 text-indigo-700 border-indigo-200', dot: 'bg-indigo-500', text: 'text-indigo-700' },
-};
 
 export default function DailyClient() {
   const [selectedDate, setSelectedDate] = useState(() => new Date().toISOString().split('T')[0]);
@@ -121,61 +114,34 @@ export default function DailyClient() {
             <span>/</span>
             <span className="text-slate-900 font-semibold">Daily Summary</span>
           </div>
-          <h1 className="text-3xl font-extrabold tracking-tight text-slate-900">
-            Daily Project Digest
+          <h1 className="font-[family-name:var(--font-display)] text-4xl font-medium tracking-tight">
+            Daily
           </h1>
-          <p className="text-slate-600 text-sm mt-1">
-            Synthesized overview of what you worked on, decisions made, and what needs follow-up.
+          <p className="mt-2 text-sm text-[var(--mkt-muted)]">
+            What moved, what was decided, and what is still open.
           </p>
         </div>
 
         {/* Date Switcher & Copy */}
         <div className="flex items-center gap-2">
           <div className="inline-flex items-center bg-white border border-slate-300 rounded-lg p-1 shadow-xs">
-            <button
-              onClick={() => changeDateOffset(-1)}
-              className="px-2.5 py-1 text-xs font-semibold text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded"
-              title="Previous day"
-            >
-              &larr;
-            </button>
+            <Button variant="secondary" size="sm" onClick={() => changeDateOffset(-1)} title="Previous day">
+              Previous
+            </Button>
             <input
               type="date"
               value={selectedDate}
               onChange={(e) => setSelectedDate(e.target.value)}
               className="text-xs font-semibold text-slate-800 border-none bg-transparent px-2 py-0.5 focus:outline-none"
             />
-            <button
-              onClick={() => changeDateOffset(1)}
-              disabled={isToday}
-              className="px-2.5 py-1 text-xs font-semibold text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded disabled:opacity-30 disabled:cursor-not-allowed"
-              title="Next day"
-            >
-              &rarr;
-            </button>
+            <Button variant="secondary" size="sm" onClick={() => changeDateOffset(1)} disabled={isToday} title="Next day">
+              Next
+            </Button>
           </div>
 
-          <button
-            onClick={copyToClipboard}
-            disabled={!summary || summary.projects.length === 0}
-            className="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold text-indigo-700 bg-indigo-50 border border-indigo-200 rounded-lg hover:bg-indigo-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-xs"
-          >
-            {copied ? (
-              <>
-                <svg className="w-3.5 h-3.5 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
-                </svg>
-                <span>Copied!</span>
-              </>
-            ) : (
-              <>
-                <svg className="w-3.5 h-3.5 text-indigo-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
-                </svg>
-                <span>Copy for Standup</span>
-              </>
-            )}
-          </button>
+          <Button size="sm" onClick={copyToClipboard} disabled={!summary || summary.projects.length === 0}>
+            {copied ? 'Copied' : 'Copy for standup'}
+          </Button>
         </div>
       </div>
 
@@ -195,31 +161,10 @@ export default function DailyClient() {
       {!loading && summary && (
         <div className="space-y-6">
           {/* Key Metrics Banner */}
-          <div className="grid grid-cols-3 gap-4">
-            <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-xs text-center">
-              <div className="text-2xl font-black text-slate-900">
-                {summary.totalActivities}
-              </div>
-              <div className="text-xs font-semibold uppercase tracking-wider text-slate-500 mt-1">
-                Activities Attributed
-              </div>
-            </div>
-            <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-xs text-center">
-              <div className="text-2xl font-black text-amber-600">
-                {summary.totalDecisions}
-              </div>
-              <div className="text-xs font-semibold uppercase tracking-wider text-slate-500 mt-1">
-                Decisions Recorded
-              </div>
-            </div>
-            <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-xs text-center">
-              <div className="text-2xl font-black text-indigo-600">
-                {summary.totalOpenLoops}
-              </div>
-              <div className="text-xs font-semibold uppercase tracking-wider text-slate-500 mt-1">
-                Follow-ups / Loops
-              </div>
-            </div>
+          <div className="flex gap-8 border-y border-[var(--mkt-line)] py-4 text-sm">
+            <p><span className="text-[var(--mkt-muted)]">Activity </span>{summary.totalActivities}</p>
+            <p><span className="text-[var(--mkt-muted)]">Decisions </span>{summary.totalDecisions}</p>
+            <p><span className="text-[var(--mkt-muted)]">Open loops </span>{summary.totalOpenLoops}</p>
           </div>
 
           {/* Project Summaries */}
@@ -240,27 +185,21 @@ export default function DailyClient() {
           ) : (
             <div className="space-y-6">
               {summary.projects.map((p) => {
-                const momentumKey = p.project.momentum || 'new';
-                const style = MOMENTUM_COLORS[momentumKey] || MOMENTUM_COLORS.new;
-
                 return (
                   <div
                     key={p.project.id}
-                    className="bg-white rounded-2xl border border-slate-200 p-6 shadow-xs space-y-5"
+                    className="space-y-4 border-b border-[var(--mkt-line)] py-8"
                   >
                     {/* Project Header */}
                     <div className="flex items-center justify-between border-b border-slate-100 pb-4">
                       <div className="flex items-center gap-3">
                         <Link
                           href={`/projects/${p.project.id}`}
-                          className="text-xl font-bold text-slate-900 hover:text-indigo-600 transition-colors"
+                          className="text-lg hover:text-[var(--mkt-accent)]"
                         >
                           {p.project.name}
                         </Link>
-                        <span className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold border ${style.badge}`}>
-                          <span className={`w-1.5 h-1.5 rounded-full ${style.dot}`} />
-                          <span className="capitalize">{p.project.momentum} momentum</span>
-                        </span>
+                        <span className="text-sm text-[var(--mkt-muted)]">{p.project.momentum}</span>
                       </div>
 
                       <Link

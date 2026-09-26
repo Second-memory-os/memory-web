@@ -1,5 +1,5 @@
-import Link from 'next/link';
 import { AuthShell } from '@/components/marketing/AuthShell';
+import Button from '@/components/ui/Button';
 
 export default async function AuthErrorPage({
   searchParams,
@@ -19,9 +19,9 @@ export default async function AuthErrorPage({
 
   return (
     <AuthShell title="Sign-in error" subtitle={message} showGoogle={false}>
-      <Link href="/login" className="mkt-btn-primary">
+      <Button href="/login" fullWidth>
         Back to sign in
-      </Link>
+      </Button>
     </AuthShell>
   );
 }

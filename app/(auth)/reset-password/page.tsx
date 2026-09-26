@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { resetPasswordAction, type AuthActionState } from '@/lib/actions/auth';
 import { AuthShell } from '@/components/marketing/AuthShell';
+import Button from '@/components/ui/Button';
 
 const initialState: AuthActionState = {};
 
@@ -74,9 +75,9 @@ function ResetForm() {
             </p>
           ) : null}
 
-          <button type="submit" disabled={pending || Boolean(state.success)} className="mkt-btn-primary">
-            {pending ? 'Updating…' : 'Update password'}
-          </button>
+          <Button type="submit" disabled={pending || Boolean(state.success)} fullWidth>
+            {pending ? 'Updating' : 'Update password'}
+          </Button>
         </form>
       )}
     </AuthShell>

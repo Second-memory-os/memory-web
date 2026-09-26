@@ -7,8 +7,8 @@ export default function WeeklyDigestCard({
   const empty = digest.completed.length + digest.needsAttention.length + digest.patterns.length === 0;
   if (empty) return null;
   return (
-    <section className="rounded-2xl border border-slate-200 bg-white p-5">
-      <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">This week</p>
+    <section className="mt-10">
+      <p className="text-xs uppercase tracking-[0.14em] text-[var(--mkt-muted)]">This week</p>
       {digest.completed.length > 0 ? (
         <div className="mt-3">
           <p className="text-sm font-medium text-slate-900">Completed</p>

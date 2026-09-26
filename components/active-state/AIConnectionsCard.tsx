@@ -14,22 +14,23 @@ function when(iso: string | null): string {
   if (!iso) return 'Not connected';
   const date = new Date(iso);
   if (Number.isNaN(date.getTime())) return 'Connected';
-  return `Synced ${date.toLocaleString(undefined, { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' })}`;
+  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  return `Synced ${months[date.getMonth()]} ${date.getDate()}`;
 }
 
 export default function AIConnectionsCard({ connections }: { connections: AiConnections }) {
   return (
-    <section className="rounded-2xl border border-slate-200 bg-white p-5">
-      <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">AI connections</p>
+    <section>
+      <p className="text-xs uppercase tracking-[0.14em] text-[var(--mkt-muted)]">AI connections</p>
       <ul className="mt-3 space-y-2">
         {NAMES.map(([key, label]) => {
           const row = connections[key];
           return (
             <li key={key} className="flex items-center justify-between text-sm">
-              <span className="font-medium text-slate-900">
-                {row.connected ? '✓' : '○'} {label}
+              <span>{label}</span>
+              <span className={row.connected ? 'text-[var(--mkt-accent)]' : 'text-[var(--mkt-muted)]'}>
+                {row.connected ? when(row.lastSync) : 'Not connected'}
               </span>
-              <span className="text-xs text-slate-500">{when(row.lastSync)}</span>
             </li>
           );
         })}
