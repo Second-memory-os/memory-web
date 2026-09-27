@@ -103,7 +103,7 @@ export async function proxyToMemoryServer(
           error: 'Tunnel unreachable',
           code: 'LOCAL_TUNNEL_UNREACHABLE',
           message:
-            'Could not reach MemoryOS on your Mac. Open the MemoryOS app → Settings → Endpoints → “Save & restart tunnel”.',
+            'MemoryOS is unavailable on your Mac. If the app is open and signed in, the tunnel continues automatically — retry in a few seconds.',
           detail,
         },
         { status: 503 }

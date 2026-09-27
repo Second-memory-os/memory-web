@@ -155,6 +155,9 @@ export async function GET(request: NextRequest) {
   let pathHint: string | undefined;
   let error: string | undefined;
   let agentOnline: boolean | undefined;
+  let agentReason: string | undefined;
+  let lastSeenAt: number | null | undefined;
+  let autoReconnect = true;
 
   if (url) {
     try {
@@ -169,14 +172,24 @@ export async function GET(request: NextRequest) {
         headers: authHeader ? { Authorization: authHeader } : {},
       });
       if (statusRes.ok) {
-        const status = (await statusRes.json()) as { online?: boolean; relay?: boolean };
+        const status = (await statusRes.json()) as {
+          online?: boolean;
+          relay?: boolean;
+          reason?: string;
+          lastSeenAt?: number | null;
+          stale?: boolean;
+          autoReconnect?: boolean;
+        };
         if (status.relay) {
           agentOnline = Boolean(status.online);
+          agentReason = status.reason;
+          lastSeenAt = status.lastSeenAt ?? null;
+          autoReconnect = status.autoReconnect !== false;
           healthy = Boolean(status.online);
           mode = status.online ? 'local-core-via-tunnel' : 'relay-waiting';
           engine = 'sqlite';
           if (!status.online) {
-            error = 'Mac agent offline — open MemoryOS and stay signed in';
+            error = 'Mac agent offline — MemoryOS reconnects automatically while the app stays signed in';
           }
           clearTimeout(timeout);
         }
@@ -214,6 +227,9 @@ export async function GET(request: NextRequest) {
       stale,
       healthy,
       agentOnline,
+      agentReason,
+      lastSeenAt,
+      autoReconnect,
       engine,
       mode,
       pathHint,

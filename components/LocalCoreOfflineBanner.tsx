@@ -100,15 +100,15 @@ export default function LocalCoreOfflineBanner() {
           </h3>
           <div className="text-slate-700 space-y-2 text-sm">
             <p>
-              Your memories stay on your Mac. Production web needs the menu bar app
-              running with Local Core + Cloudflare tunnel so the timeline can load.
+              Your memories stay on your Mac. If MemoryOS is open and signed in, the tunnel
+              continues on its own. This page checks that status every few seconds.
             </p>
             <div className="mt-4 space-y-1">
-              <p className="font-medium text-slate-900">To reconnect:</p>
+              <p className="font-medium text-slate-900">If this stays unavailable:</p>
               <ol className="list-decimal list-inside space-y-1 text-slate-600">
-                <li>Open the MemoryOS menu bar app (from Applications)</li>
-                <li>Sign in with the same account used on this site</li>
-                <li>Wait until status shows Local Core / tunnel online, then refresh</li>
+                <li>Open the MemoryOS app and stay signed in</li>
+                <li>Leave it running — the tunnel reconnects from status without a daily reset</li>
+                <li>Retry in Claude with the same connector URL</li>
               </ol>
             </div>
           </div>
