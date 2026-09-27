@@ -17,7 +17,7 @@ function LoginForm() {
   return (
     <AuthShell
       title="Sign in"
-      subtitle="Welcome back. Your memory stays on your Mac."
+      subtitle="Welcome back. Today’s list stays on your Mac."
       callbackUrl={callbackUrl}
       footer={
         <>

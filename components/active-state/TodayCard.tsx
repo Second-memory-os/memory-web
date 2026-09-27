@@ -1,15 +1,22 @@
 export type TodayItem = {
   id: string;
   text: string;
-  reason: 'due-today' | 'overdue' | 'stale' | 'repeated' | 'recent';
+  reason: 'now' | 'due-today' | 'overdue' | 'goal' | 'later' | 'elsewhere' | 'waiting';
+  rank?: number;
+  score?: number;
+  status?: string | null;
+  waitingOn?: string | null;
+  followUpAt?: string | null;
 };
 
 const REASON: Record<TodayItem['reason'], string> = {
+  now: 'Now',
   'due-today': 'Due today',
   overdue: 'Overdue',
-  stale: 'Quiet for 3 days',
-  repeated: 'Mentioned again',
-  recent: 'New',
+  goal: 'Goal',
+  later: 'Later',
+  elsewhere: 'Not this project',
+  waiting: 'Waiting',
 };
 
 export default function TodayCard({ items }: { items: TodayItem[] }) {

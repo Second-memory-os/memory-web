@@ -14,7 +14,7 @@ export default function SignupPage() {
   return (
     <AuthShell
       title="Get access"
-      subtitle="Create your MemoryOS account. Memory stays on your Mac."
+      subtitle="Create your account. The goal and the memory stay on your Mac."
       footer={
         <>
           Already have an account?{' '}

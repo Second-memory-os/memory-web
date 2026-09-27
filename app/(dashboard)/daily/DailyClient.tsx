@@ -118,7 +118,7 @@ export default function DailyClient() {
             Daily
           </h1>
           <p className="mt-2 text-sm text-[var(--mkt-muted)]">
-            What moved, what was decided, and what is still open.
+            What already happened today. What to do next lives on Home.
           </p>
         </div>
 

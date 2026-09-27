@@ -14,7 +14,7 @@ export default function PricingPage() {
             Simple pricing
           </h1>
           <p className="mt-4 text-[var(--mkt-muted)]">
-            Start free on your Mac. Your memory stays local either way.
+            Start free on your Mac. The goal, the day, and the memory stay local.
           </p>
         </div>
 
@@ -23,8 +23,8 @@ export default function PricingPage() {
             {
               name: 'Free',
               price: '$0',
-              blurb: 'Personal capture and MCP on one Mac.',
-              features: ['Local SQLite memory', 'Open loops', 'Claude / Cursor MCP', 'Your own AI key'],
+              blurb: 'Your day, on one Mac.',
+              features: ['Today and Not today', 'Goals and milestones', 'Actions from your inbox', 'Claude / Cursor MCP'],
               cta: 'Get started',
               href: '/signup',
               highlight: false,
@@ -32,10 +32,9 @@ export default function PricingPage() {
             {
               name: 'Pro',
               price: '$12',
-              blurb: 'For builders who live in many AI tabs.',
+              blurb: 'For people who switch AI tools all day.',
               features: [
                 'Everything in Free',
-                'Cross-agent bridge',
                 'Priority support',
                 'Higher capture budgets',
               ],

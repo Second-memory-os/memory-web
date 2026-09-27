@@ -1,6 +1,6 @@
 export const SITE = {
   name: 'MemoryOS',
-  tagline: 'Your personal memory for the AI era',
+  tagline: 'Know what to do now',
   supportEmail: 'support@memoryos.ai',
   company: 'MemoryOS',
   address: 'United States',
@@ -9,7 +9,7 @@ export const SITE = {
 } as const;
 
 export const NAV_LINKS = [
-  { href: '/#how-it-helps', label: 'How it helps' },
+  { href: '/#use', label: 'Use' },
   { href: '/#what-we-provide', label: 'Product' },
   { href: '/#privacy', label: 'Privacy' },
   { href: '/pricing', label: 'Pricing' },

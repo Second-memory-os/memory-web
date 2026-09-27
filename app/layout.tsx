@@ -14,11 +14,11 @@ const sans = Outfit({
 
 export const metadata: Metadata = {
   title: {
-    default: 'MemoryOS — Your memory that closes open loops',
+    default: 'MemoryOS — Know the one thing to do right now',
     template: '%s · MemoryOS',
   },
   description:
-    'MemoryOS captures your personal context on your Mac, finds open loops, and gives Claude, ChatGPT, and Cursor a private memory layer. Stored on your device — not in our cloud.',
+    'MemoryOS watches the work on your Mac, names what to do today, and gives Claude, ChatGPT, and Cursor the context for your current goal. Stored on your device.',
   icons: {
     icon: [{ url: '/favicon-32.png', sizes: '32x32', type: 'image/png' }],
     apple: [{ url: '/apple-touch-icon.png', sizes: '180x180', type: 'image/png' }],

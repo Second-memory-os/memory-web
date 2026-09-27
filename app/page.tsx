@@ -27,41 +27,46 @@ function HeroIllustration() {
         {/* Timeline card */}
         <rect x="64" y="100" width="280" height="200" rx="16" fill="#fff" stroke="#E4EBE8" />
         <text x="88" y="136" fill="#141816" fontSize="15" fontWeight="600" fontFamily="system-ui,sans-serif">
-          Today&apos;s timeline
+          Today
         </text>
-        <rect x="88" y="156" width="180" height="10" rx="5" fill="#E8F5F0" />
-        <rect x="88" y="180" width="220" height="8" rx="4" fill="#E4EBE8" />
-        <rect x="88" y="200" width="160" height="8" rx="4" fill="#E4EBE8" />
-        <rect x="88" y="232" width="72" height="28" rx="14" fill="#0F6E56" />
-        <text x="100" y="250" fill="#fff" fontSize="11" fontFamily="system-ui,sans-serif">
-          On this Mac
+        <text x="88" y="164" fill="#141816" fontSize="12" fontFamily="system-ui,sans-serif">
+          1. Send the founder messages
         </text>
-        <rect x="172" y="232" width="100" height="28" rx="14" fill="#F4F7F6" stroke="#E4EBE8" />
-        <text x="186" y="250" fill="#5C6561" fontSize="11" fontFamily="system-ui,sans-serif">
-          Not the cloud
+        <text x="88" y="186" fill="#5C6561" fontSize="12" fontFamily="system-ui,sans-serif">
+          2. Reply to the client
+        </text>
+        <text x="88" y="208" fill="#5C6561" fontSize="12" fontFamily="system-ui,sans-serif">
+          3. Publish the product update
+        </text>
+        <text x="88" y="240" fill="#0F6E56" fontSize="11" fontFamily="system-ui,sans-serif">
+          Not today · SEO article
         </text>
 
         {/* Open loops card */}
         <rect x="368" y="100" width="208" height="132" rx="16" fill="#141816" />
         <text x="392" y="136" fill="#fff" fontSize="14" fontWeight="600" fontFamily="system-ui,sans-serif">
-          Open loops
+          Your goal
         </text>
-        <rect x="392" y="156" width="160" height="8" rx="4" fill="#2A3330" />
-        <rect x="392" y="176" width="120" height="8" rx="4" fill="#2A3330" />
-        <text x="392" y="210" fill="#7DCFB6" fontSize="12" fontFamily="system-ui,sans-serif">
-          3 waiting · auto-tracked
+        <text x="392" y="162" fill="#A8B5AF" fontSize="11" fontFamily="system-ui,sans-serif">
+          10 paying customers
+        </text>
+        <text x="392" y="186" fill="#7DCFB6" fontSize="11" fontFamily="system-ui,sans-serif">
+          Next: 20 founder messages
+        </text>
+        <text x="392" y="210" fill="#A8B5AF" fontSize="11" fontFamily="system-ui,sans-serif">
+          Drift if the week goes elsewhere
         </text>
 
         {/* MCP bridge */}
         <rect x="368" y="252" width="208" height="100" rx="16" fill="#fff" stroke="#E4EBE8" />
         <text x="392" y="288" fill="#141816" fontSize="13" fontWeight="600" fontFamily="system-ui,sans-serif">
-          Cross-agent bridge
+          Every AI you open
         </text>
         <text x="392" y="312" fill="#5C6561" fontSize="11" fontFamily="system-ui,sans-serif">
-          Claude → ChatGPT → Cursor
+          Claude · ChatGPT · Cursor
         </text>
         <text x="392" y="332" fill="#0F6E56" fontSize="11" fontFamily="system-ui,sans-serif">
-          One memory · every AI
+          Context for this goal
         </text>
       </svg>
     </div>
@@ -88,14 +93,14 @@ export default function Home() {
               {SITE.name}
             </p>
             <h1 className="mkt-rise mkt-rise-delay-1 mt-4 font-[family-name:var(--font-display)] text-[2.65rem] font-semibold leading-[1.08] tracking-tight sm:text-5xl lg:text-[3.35rem]">
-              Your memory that
+              Know the one thing
               <br />
-              closes open loops
+              to do right now
             </h1>
             <p className="mkt-rise mkt-rise-delay-2 mt-6 max-w-md text-lg leading-relaxed text-[var(--mkt-muted)]">
-              Capture personal context on your Mac. Surface what still needs you.
-              Give Claude, ChatGPT, and Cursor the same private memory — without a
-              cloud memory database.
+              You already have too many projects running. MemoryOS watches the work,
+              holds the asks that would otherwise vanish, and tells you what moves
+              today — and what to leave alone.
             </p>
             <div className="mkt-rise mkt-rise-delay-3 mt-9 flex flex-wrap items-center gap-3">
               <a
@@ -125,77 +130,91 @@ export default function Home() {
         </div>
       </section>
 
-      {/* How it helps */}
-      <section id="how-it-helps" className="scroll-mt-20 border-b border-[var(--mkt-line)] bg-[var(--mkt-wash)]">
+      <section id="use" className="scroll-mt-20 border-b border-[var(--mkt-line)] bg-[var(--mkt-wash)]">
         <div className="mx-auto max-w-6xl px-5 py-20 sm:px-8 sm:py-24">
           <p className="text-sm font-medium uppercase tracking-[0.14em] text-[var(--mkt-accent)]">
-            How it helps
+            What it is for
           </p>
           <h2 className="mt-3 max-w-2xl font-[family-name:var(--font-display)] text-3xl font-semibold tracking-tight sm:text-4xl">
-            Stay on top of work without rebuilding context in every chat
+            Six jobs. Not another app to maintain.
           </h2>
           <p className="mt-4 max-w-2xl text-[var(--mkt-muted)] leading-relaxed">
-            MemoryOS watches the work already happening on your Mac, remembers what
-            matters, and brings that context into the AI tools you already use.
+            MemoryOS is the operating layer for a person who is building more than one thing
+            at once. You work. It keeps the thread, the ask, and the goal.
           </p>
 
-          <div className="mt-14 grid gap-10 md:grid-cols-3">
+          <div className="mt-14 grid gap-6 md:grid-cols-2">
             {[
               {
-                step: '01',
-                title: 'Captures your personal context',
-                body: 'Active-window capture and optional voice notes turn what you are doing into searchable memory — privately, on this machine.',
+                n: '01',
+                title: 'What should I do today?',
+                body: 'Home does not hand you a pile of open work. It names the one thing to do now, then two more, and parks the rest under Not today.',
               },
               {
-                step: '02',
-                title: 'Finds your open loops',
-                body: 'Scans comm apps and browser tabs for unanswered asks, follow-ups, and commitments so nothing important slips.',
+                n: '02',
+                title: 'Remember the work without notes',
+                body: 'The Mac agent keeps the session. When you close it, MemoryOS writes what mattered: the problem, the finding, the decision, and what is still open.',
               },
               {
-                step: '03',
-                title: 'Bridges every AI you use',
-                body: 'Via MCP, Claude, ChatGPT, Cursor, and Perplexity can read the same local memory — including continuing from another agent’s tab.',
+                n: '03',
+                title: 'Stop losing the asks',
+                body: '“Reply to this.” “Send that.” “Check tomorrow.” Those become actions that move from detected to waiting to done, with who you are waiting on and when to follow up.',
+              },
+              {
+                n: '04',
+                title: 'Move the goal, not the task list',
+                body: 'A goal is “10 paying customers,” not “write the landing page.” MemoryOS ties the week’s work to that goal and tells you when the hours went somewhere else.',
+              },
+              {
+                n: '05',
+                title: 'Post from what you actually did',
+                body: 'When a session has a lesson, a failure, or a decision worth telling, it becomes an idea. Home shows three. Dismiss the ones you will not use.',
+              },
+              {
+                n: '06',
+                title: 'Every AI already knows the goal',
+                body: 'Claude, ChatGPT, and Cursor can ask for the context of this objective: milestone, next action, blockers, recent work, and the decisions already made.',
               },
             ].map((item) => (
-              <div key={item.step}>
-                <p className="font-[family-name:var(--font-display)] text-sm text-[var(--mkt-accent)]">
-                  {item.step}
-                </p>
+              <article
+                key={item.n}
+                className="rounded-2xl border border-[var(--mkt-line)] bg-white p-7"
+              >
+                <p className="font-[family-name:var(--font-display)] text-sm text-[var(--mkt-accent)]">{item.n}</p>
                 <h3 className="mt-2 text-xl font-semibold tracking-tight">{item.title}</h3>
                 <p className="mt-3 text-sm leading-relaxed text-[var(--mkt-muted)]">{item.body}</p>
-              </div>
+              </article>
             ))}
           </div>
         </div>
       </section>
 
-      {/* What we provide */}
       <section id="what-we-provide" className="scroll-mt-20 border-b border-[var(--mkt-line)]">
         <div className="mx-auto max-w-6xl px-5 py-20 sm:px-8 sm:py-24">
           <p className="text-sm font-medium uppercase tracking-[0.14em] text-[var(--mkt-accent)]">
-            What we provide
+            How it runs
           </p>
           <h2 className="mt-3 max-w-xl font-[family-name:var(--font-display)] text-3xl font-semibold tracking-tight sm:text-4xl">
-            A memory layer that works with the tools you already open
+            A menu-bar Mac app, then the AIs you already use
           </h2>
 
           <div className="mt-14 grid gap-6 sm:grid-cols-2">
             {[
               {
-                title: 'macOS menu bar agent',
-                body: 'Lightweight capture of the frontmost work session. Soft-pauses when you are idle so you are not burning AI tokens for a frozen screen.',
+                title: 'Menu bar',
+                body: 'Today’s three actions, what to leave for later, and the current goal. Capture keeps running while you work.',
               },
               {
-                title: 'Open-loop inbox',
-                body: 'Action items from Gmail, LinkedIn, WhatsApp, Slack, and more — ranked by relevance, not noise.',
+                title: 'Home',
+                body: 'Set the goal and the milestone. See drift if the week went to the wrong project. Dismiss content ideas you will not post.',
               },
               {
-                title: 'MCP for Claude, Cursor & ChatGPT',
-                body: 'One local MCP server. Timeline memory for life and work; agent context so one AI can continue another’s thread by tab name.',
+                title: 'Actions',
+                body: 'Asks from mail, LinkedIn, Slack, and WhatsApp land as actions, not a second todo app. Waiting items stay off Today until the follow-up date.',
               },
               {
-                title: 'Your keys, your models',
-                body: 'Vision and chat run with the AI key you configure (OpenRouter / OpenAI). We do not sell your memory or train on it.',
+                title: 'MCP',
+                body: 'get_daily_focus, get_goals, and get_context with an objective. The other tools still read the timeline, decisions, and commitments.',
               },
             ].map((card) => (
               <div
@@ -218,13 +237,13 @@ export default function Home() {
               Who it is for
             </p>
             <h2 className="mt-3 font-[family-name:var(--font-display)] text-3xl font-semibold tracking-tight">
-              Builders who live in many AI tabs
+              People with several things in flight
             </h2>
             <ul className="mt-8 space-y-4 text-[var(--mkt-muted)]">
               {[
-                'Founders and operators juggling Slack, email, and planning docs',
-                'Engineers who want Cursor and Claude to share project context',
-                'Anyone tired of re-explaining “who I am” to every new chat',
+                'Founders deciding which project actually moves the goal this week',
+                'Operators who lose “reply to this” between meetings',
+                'Builders who refuse to re-explain the same goal in every AI tab',
               ].map((line) => (
                 <li key={line} className="flex gap-3 text-sm leading-relaxed">
                   <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-[var(--mkt-accent)]" />
@@ -238,16 +257,16 @@ export default function Home() {
               Why people use it
             </p>
             <h2 className="mt-3 font-[family-name:var(--font-display)] text-3xl font-semibold tracking-tight">
-              Because context-switching should not erase your week
+              Because “what is open” is not a decision
             </h2>
             <p className="mt-6 text-sm leading-relaxed text-[var(--mkt-muted)]">
-              Without a personal memory layer, every AI starts from zero. MemoryOS
-              keeps a continuous record of what you worked on, who you owe, and what
-              you decided — then lets your tools query it when you ask.
+              A todo list grows. A goal says what the week is for. MemoryOS keeps both:
+              the asks that appear during the day, and whether the work you did
+              actually moved the goal.
             </p>
             <p className="mt-4 text-sm leading-relaxed text-[var(--mkt-muted)]">
-              You get fewer dropped follow-ups, faster handoffs between Claude and
-              ChatGPT, and a Mac that actually remembers.
+              When you switch from Cursor to Claude, you do not start from zero.
+              You hand it the milestone, the blocker, and the last decision.
             </p>
           </div>
         </div>
@@ -312,11 +331,11 @@ export default function Home() {
         <div className="mx-auto flex max-w-6xl flex-col items-start justify-between gap-8 px-5 py-16 sm:px-8 sm:py-20 md:flex-row md:items-center">
           <div>
             <h2 className="font-[family-name:var(--font-display)] text-3xl font-semibold tracking-tight sm:text-4xl">
-              No setup maze. Download and begin.
+              Download the Mac app. Open Home. Name the goal.
             </h2>
             <p className="mt-3 max-w-lg text-white/65">
-              Sign in once, grant Screen Recording, connect your AI key, and MemoryOS
-              starts building the memory your agents can actually use.
+              Capture stays on this machine. Today’s list, the actions, and the
+              context your AIs read all come from that local memory.
             </p>
           </div>
           <a

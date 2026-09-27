@@ -566,7 +566,13 @@ export default function SettingsForms({
               <code>save_agent_context</code> / <code>get_agent_context</code> — AI chat by tab title
             </li>
             <li>
-              <code>get_context</code> — unified router (timeline_today, agent_tab, hybrid)
+              <code>get_daily_focus</code> / <code>get_goals</code> — what to do now, and the active goal
+            </li>
+            <li>
+              <code>get_context</code> — pass <code>objective</code> so the pack is for this goal, not a generic dump
+            </li>
+            <li>
+              <code>get_content_ideas</code> — lessons from work that are worth posting
             </li>
             <li>
               Legacy names (<code>save_memory</code>, <code>timeline</code>) still work as deprecated aliases

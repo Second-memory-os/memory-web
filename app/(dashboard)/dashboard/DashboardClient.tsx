@@ -34,6 +34,26 @@ type GraphLists = {
   }>;
 };
 
+type GoalView = {
+  id: string;
+  title: string;
+  statement?: string | null;
+  importance: number;
+  milestone: { id: string; title: string; nextAction?: string | null } | null;
+  projects: Array<{ id: string; name: string }>;
+  progress: Array<{ id: string; summary: string; at: string }>;
+};
+
+type ContentIdea = {
+  id: string;
+  topic: string;
+  lesson?: string | null;
+  kind?: string | null;
+  status: string;
+};
+
+type ProjectOption = { id: string; name: string };
+
 const emptyGraph: GraphLists = {
   decisions: [],
   commitments: [],
@@ -141,6 +161,19 @@ export default function DashboardClient({
   });
   const [graph, setGraph] = useState<GraphLists>(emptyGraph);
   const [todayItems, setTodayItems] = useState<TodayItem[]>([]);
+  const [notToday, setNotToday] = useState<TodayItem[]>([]);
+  const [goal, setGoal] = useState<GoalView | null>(null);
+  const [ideas, setIdeas] = useState<ContentIdea[]>([]);
+  const [projectOptions, setProjectOptions] = useState<ProjectOption[]>([]);
+  const [goalForm, setGoalForm] = useState(false);
+  const [goalDraft, setGoalDraft] = useState({
+    title: '',
+    statement: '',
+    importance: '3',
+    milestone: '',
+    nextAction: '',
+    projectId: '',
+  });
   const [projects, setProjects] = useState<ActiveProject[]>([]);
   const [decisions, setDecisions] = useState<DecisionItem[]>([]);
   const [stats, setStats] = useState<MemoryStats>(emptyStats);
@@ -182,6 +215,8 @@ export default function DashboardClient({
       if (stateRes.ok) {
         const state = await stateRes.json();
         setTodayItems(state.today || []);
+        setNotToday(state.notToday || []);
+        setGoal(state.goal || null);
         setProjects(state.activeProjects || []);
         setDecisions(state.recentDecisions || []);
         setStats(state.stats || emptyStats);
@@ -192,6 +227,21 @@ export default function DashboardClient({
         const work = await workRes.json();
         setAlerts(work.alerts || []);
         setDigest(work.digest || null);
+      }
+      const ideaRes = await fetch('/api/content-ideas?limit=3');
+      if (ideaRes.ok) {
+        const ideaData = await ideaRes.json();
+        setIdeas(ideaData.ideas || []);
+      }
+      const projectRes = await fetch('/api/projects');
+      if (projectRes.ok) {
+        const projectData = await projectRes.json();
+        setProjectOptions(
+          (projectData.projects || []).map((project: { id: string; name: string }) => ({
+            id: project.id,
+            name: project.name,
+          }))
+        );
       }
     } catch (error) {
       setMessage({
@@ -214,6 +264,60 @@ export default function DashboardClient({
       }
     }
   }, [loadTimeline]);
+
+  const saveGoal = async () => {
+    if (!goalDraft.title.trim()) return;
+    setSaving(true);
+    const body = {
+      title: goalDraft.title.trim(),
+      statement: goalDraft.statement.trim(),
+      importance: Number(goalDraft.importance) || 3,
+      milestone: goalDraft.milestone.trim()
+        ? {
+            id: goal?.milestone?.id,
+            title: goalDraft.milestone.trim(),
+            nextAction: goalDraft.nextAction.trim(),
+          }
+        : undefined,
+      projectIds: goalDraft.projectId ? [goalDraft.projectId] : [],
+    };
+    const res = await fetch(goal ? `/api/goals/${goal.id}` : '/api/goals', {
+      method: goal ? 'PATCH' : 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    });
+    setSaving(false);
+    if (!res.ok) {
+      const data = await res.json().catch(() => ({}));
+      setMessage({ type: 'err', text: data.error || 'Could not save goal' });
+      return;
+    }
+    setGoalForm(false);
+    await loadTimeline();
+  };
+
+  const dismissIdea = async (id: string) => {
+    setIdeas((current) => current.filter((idea) => idea.id !== id));
+    await fetch(`/api/content-ideas/${id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ status: 'dismissed' }),
+    });
+  };
+
+  const itemDetail = (item: TodayItem) => {
+    if (item.status === 'waiting' && item.waitingOn) {
+      const when = item.followUpAt ? ` · follow up ${item.followUpAt.slice(0, 10)}` : '';
+      return `Waiting on ${item.waitingOn}${when}`;
+    }
+    if (item.reason === 'due-today') return 'Due';
+    if (item.reason === 'overdue') return 'Overdue';
+    if (item.reason === 'goal') return 'Goal';
+    if (item.reason === 'later') return 'Later';
+    if (item.reason === 'elsewhere') return 'Not today';
+    if (item.reason === 'waiting') return 'Waiting';
+    return 'Now';
+  };
 
   const handleCapture = async () => {
     if (!content.trim() && !selectedFile) return;
@@ -339,23 +443,147 @@ export default function DashboardClient({
                 ))}
               </ul>
             ) : null}
-            <p className="text-xs tracking-[0.14em] text-[var(--mkt-muted)] uppercase">Today</p>
+            <p className="text-xs tracking-[0.14em] text-[var(--mkt-muted)] uppercase">Goal</p>
+            {goal && !goalForm ? (
+              <div className="mt-3">
+                <p className="text-lg text-[var(--mkt-ink)]">{goal.title}</p>
+                {goal.statement ? <p className="mt-1 text-sm text-[var(--mkt-muted)]">{goal.statement}</p> : null}
+                {goal.milestone ? (
+                  <p className="mt-3 text-sm text-[var(--mkt-ink)]">
+                    {goal.milestone.title}
+                    {goal.milestone.nextAction ? ` — ${goal.milestone.nextAction}` : ''}
+                  </p>
+                ) : null}
+                {goal.progress[0] ? (
+                  <p className="mt-2 text-sm text-[var(--mkt-muted)]">{goal.progress[0].summary}</p>
+                ) : null}
+                <button
+                  type="button"
+                  className="mt-3 text-xs underline decoration-[var(--mkt-line)] underline-offset-4"
+                  onClick={() => {
+                    setGoalDraft({
+                      title: goal.title,
+                      statement: goal.statement || '',
+                      importance: String(goal.importance || 3),
+                      milestone: goal.milestone?.title || '',
+                      nextAction: goal.milestone?.nextAction || '',
+                      projectId: goal.projects[0]?.id || '',
+                    });
+                    setGoalForm(true);
+                  }}
+                >
+                  Edit goal
+                </button>
+              </div>
+            ) : (
+              <form
+                className="mt-3 space-y-3"
+                onSubmit={(event) => {
+                  event.preventDefault();
+                  void saveGoal();
+                }}
+              >
+                <input
+                  className="w-full border-b border-[var(--mkt-line)] bg-transparent py-2 text-sm outline-none"
+                  placeholder="Goal, for example get 10 paying customers"
+                  value={goalDraft.title}
+                  onChange={(event) => setGoalDraft({ ...goalDraft, title: event.target.value })}
+                />
+                <input
+                  className="w-full border-b border-[var(--mkt-line)] bg-transparent py-2 text-sm outline-none"
+                  placeholder="Why this matters"
+                  value={goalDraft.statement}
+                  onChange={(event) => setGoalDraft({ ...goalDraft, statement: event.target.value })}
+                />
+                <input
+                  className="w-full border-b border-[var(--mkt-line)] bg-transparent py-2 text-sm outline-none"
+                  placeholder="Current milestone"
+                  value={goalDraft.milestone}
+                  onChange={(event) => setGoalDraft({ ...goalDraft, milestone: event.target.value })}
+                />
+                <input
+                  className="w-full border-b border-[var(--mkt-line)] bg-transparent py-2 text-sm outline-none"
+                  placeholder="Next action"
+                  value={goalDraft.nextAction}
+                  onChange={(event) => setGoalDraft({ ...goalDraft, nextAction: event.target.value })}
+                />
+                {projectOptions.length > 0 ? (
+                  <select
+                    className="w-full bg-transparent py-2 text-sm"
+                    value={goalDraft.projectId}
+                    onChange={(event) => setGoalDraft({ ...goalDraft, projectId: event.target.value })}
+                  >
+                    <option value="">Link a project</option>
+                    {projectOptions.map((project) => (
+                      <option key={project.id} value={project.id}>
+                        {project.name}
+                      </option>
+                    ))}
+                  </select>
+                ) : null}
+                <div className="flex gap-4">
+                  <Button size="sm" type="submit" disabled={saving}>
+                    Save goal
+                  </Button>
+                  {goal ? (
+                    <Button size="sm" variant="ghost" type="button" onClick={() => setGoalForm(false)}>
+                      Cancel
+                    </Button>
+                  ) : null}
+                </div>
+              </form>
+            )}
+
+            <p className="mt-10 text-xs tracking-[0.14em] text-[var(--mkt-muted)] uppercase">Today</p>
             <p className="mt-3 text-lg text-[var(--mkt-ink)]">
               {todayItems.length === 0
-                ? 'Nothing is waiting on you.'
-                : `${todayItems.length} ${todayItems.length === 1 ? 'thing needs' : 'things need'} attention`}
+                ? 'Nothing should move today.'
+                : todayItems[0]?.text}
             </p>
             {todayItems.length > 0 ? (
-              <ul className="mt-6 border-y border-[var(--mkt-line)]">
-                {todayItems.map((item) => (
+              <ol className="mt-6 border-y border-[var(--mkt-line)]">
+                {todayItems.map((item, index) => (
                   <li key={item.id} className="flex items-baseline justify-between gap-6 border-b border-[var(--mkt-line)] py-3 text-sm last:border-b-0">
-                    <span>{item.text}</span>
+                    <span>
+                      {index + 1}. {item.text}
+                    </span>
                     <span className={item.reason === 'overdue' || item.reason === 'due-today' ? 'text-[var(--mkt-accent)]' : 'text-[var(--mkt-muted)]'}>
-                      {item.reason === 'due-today' ? 'Due' : item.reason === 'overdue' ? 'Overdue' : item.reason === 'stale' ? 'Quiet' : item.reason === 'repeated' ? 'Again' : 'New'}
+                      {itemDetail(item)}
                     </span>
                   </li>
                 ))}
-              </ul>
+              </ol>
+            ) : null}
+            {notToday.length > 0 ? (
+              <>
+                <p className="mt-8 text-xs tracking-[0.14em] text-[var(--mkt-muted)] uppercase">Not today</p>
+                <ul className="mt-3">
+                  {notToday.map((item) => (
+                    <li key={item.id} className="py-1.5 text-sm text-[var(--mkt-muted)]">
+                      {item.text}
+                      <span className="ml-2 text-xs">{itemDetail(item)}</span>
+                    </li>
+                  ))}
+                </ul>
+              </>
+            ) : null}
+            {ideas.length > 0 ? (
+              <>
+                <p className="mt-8 text-xs tracking-[0.14em] text-[var(--mkt-muted)] uppercase">Worth posting</p>
+                <ul className="mt-3">
+                  {ideas.map((idea) => (
+                    <li key={idea.id} className="flex items-baseline justify-between gap-4 py-1.5 text-sm">
+                      <span>
+                        {idea.topic}
+                        {idea.lesson ? <span className="mt-1 block text-[var(--mkt-muted)]">{idea.lesson}</span> : null}
+                      </span>
+                      <button type="button" className="text-xs text-[var(--mkt-muted)]" onClick={() => void dismissIdea(idea.id)}>
+                        Dismiss
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              </>
             ) : null}
             <p className="mt-8 flex gap-5 text-sm">
               <Link href="/dashboard?view=timeline" className="underline decoration-[var(--mkt-line)] underline-offset-4">

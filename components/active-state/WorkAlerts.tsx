@@ -4,7 +4,7 @@ import Button from '@/components/ui/Button';
 
 export type WorkAlert = {
   id: string;
-  kind: 'stalled' | 'overdue' | 'stale' | 'blocked' | 'deviation';
+  kind: 'stalled' | 'overdue' | 'stale' | 'blocked' | 'deviation' | 'drift';
   title: string;
   description: string;
 };

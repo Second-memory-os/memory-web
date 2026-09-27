@@ -16,8 +16,8 @@ export default function LimitedUseDisclosurePage() {
 
       <h2>Purpose of MemoryOS</h2>
       <p>
-        MemoryOS helps You build a personal memory layer on Your Mac: capturing work
-        context, finding open loops, and exposing that memory to AI tools You authorize
+        MemoryOS helps You decide what to do today, remember the work without notes,
+        keep asks from disappearing, and expose that context to AI tools You authorize
         via MCP. We design the product so Your memory content stays on Your Device.
       </p>
 
