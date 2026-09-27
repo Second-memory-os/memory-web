@@ -11,6 +11,7 @@ import {
   assertResourceForUser,
   type AuthorizeParams,
 } from '@/lib/oauth/store';
+import { scopeFromCapabilities } from '@/lib/mcp-capabilities';
 
 export type ConsentState = { error?: string };
 
@@ -37,7 +38,8 @@ export async function approveMcpConsentAction(
   const decision = String(formData.get('decision') || 'deny');
 
   try {
-    const { resource, scope } = await validateAuthorizeRequest(params);
+    const { resource } = await validateAuthorizeRequest(params);
+    const scope = scopeFromCapabilities(formData.getAll('capability').map((value) => String(value)));
     await assertResourceForUser(session.user.id, resource);
 
     if (decision !== 'approve') {

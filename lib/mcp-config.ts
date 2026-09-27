@@ -34,6 +34,7 @@ export function buildMcpConfig(input: BuildMcpConfigInput) {
         cwd: memoryServerRoot,
         env: {
           USER_ID: input.userId,
+          MCP_CLIENT: 'claude',
           PATH: `${nodeDir}:/usr/local/bin:/opt/homebrew/bin:/usr/bin:/bin`,
         },
       },
@@ -78,6 +79,21 @@ export function buildMcpConfig(input: BuildMcpConfigInput) {
     userId: input.userId,
     memoryServerRoot,
     claudeMcpJson: JSON.stringify(claudeMcpConfig, null, 2),
+    cursorMcpJson: JSON.stringify(
+      {
+        mcpServers: {
+          memoryos: {
+            ...claudeMcpConfig.mcpServers.memoryos,
+            env: {
+              ...claudeMcpConfig.mcpServers.memoryos.env,
+              MCP_CLIENT: 'cursor',
+            },
+          },
+        },
+      },
+      null,
+      2
+    ),
     claudeRemoteConnectorJson: JSON.stringify(claudeRemoteConnector, null, 2),
     openaiMcpJson: JSON.stringify(openaiMcpConfig, null, 2),
     remoteMcpUrl,

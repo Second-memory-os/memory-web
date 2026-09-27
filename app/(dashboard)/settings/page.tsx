@@ -77,6 +77,7 @@ export default async function SettingsPage() {
           visionModel={settings.visionModel}
           embeddingModel={settings.embeddingModel}
           mcpConfigJson={mcpConfigJson}
+          cursorMcpJson={mcpBuilt.cursorMcpJson}
           mcpTestCommands={mcpTestCommands}
           memoryServerRoot={memoryServerRoot}
           remoteMcpUrl={remoteMcpUrl}

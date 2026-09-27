@@ -25,6 +25,16 @@ export function normalizeMcpPath(path: string): string {
 }
 
 export const MCP_OAUTH_SCOPE = 'mcp:tools';
+export const MCP_CAPABILITY_SCOPES = [
+  'mcp:core',
+  'mcp:goals',
+  'mcp:projects',
+  'mcp:content',
+  'mcp:decisions',
+  'mcp:commitments',
+  'mcp:people',
+  'mcp:actions',
+] as const;
 export const ACCESS_TOKEN_TTL_SECONDS = 60 * 60; // 1 hour
 export const REFRESH_TOKEN_TTL_SECONDS = 60 * 60 * 24 * 30; // 30 days
 export const AUTH_CODE_TTL_SECONDS = 10 * 60; // 10 minutes
@@ -41,7 +51,7 @@ export function authorizationServerMetadata() {
     grant_types_supported: ['authorization_code', 'refresh_token'],
     code_challenge_methods_supported: ['S256'],
     token_endpoint_auth_methods_supported: ['none', 'client_secret_post'],
-    scopes_supported: [MCP_OAUTH_SCOPE],
+    scopes_supported: [MCP_OAUTH_SCOPE, ...MCP_CAPABILITY_SCOPES],
     resource_indicators_supported: true,
     // Required for Claude's preferred Client ID Metadata Document flow
     client_id_metadata_document_supported: true,

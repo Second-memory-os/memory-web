@@ -13,6 +13,7 @@ import {
   isSelfHostedProvider,
   type AiProvider,
 } from '@/lib/ai-models';
+import McpGrantEditor from './McpGrantEditor';
 
 const initialState: SettingsActionState = {};
 
@@ -37,6 +38,7 @@ type Props = {
   visionModel: string;
   embeddingModel: string;
   mcpConfigJson: string;
+  cursorMcpJson: string;
   mcpTestCommands: string;
   memoryServerRoot: string;
   remoteMcpUrl: string;
@@ -151,6 +153,7 @@ export default function SettingsForms({
   visionModel: initialVisionModel,
   embeddingModel: initialEmbeddingModel,
   mcpConfigJson,
+  cursorMcpJson,
   mcpTestCommands,
   memoryServerRoot,
   remoteMcpUrl,
@@ -548,37 +551,10 @@ export default function SettingsForms({
       <div id="mcp-configuration" className="border-b border-[var(--mkt-line)] py-8 scroll-mt-6">
         <h2 className="text-xl font-semibold text-slate-900 mb-1">MCP Configuration</h2>
         <p className="text-slate-600 mb-4">
-          MemoryOS MCP v2 uses two lanes: <strong>timeline</strong> (macOS capture) and{' '}
-          <strong>agent</strong> (Claude/ChatGPT/Perplexity tabs). Cross-agent bridge example:
-          in ChatGPT call{' '}
-          <code className="rounded bg-slate-100 px-1 text-xs">get_agent_context</code> with{' '}
-          <code className="rounded bg-slate-100 px-1 text-xs">platform: &quot;claude&quot;</code> and
-          your tab title — e.g. &quot;Founders Summit planning&quot;.
+          Each AI only sees the lanes you allow. ChatGPT, Cursor, and Claude do not share one
+          full-memory token, and none of them can read another AI&apos;s chats.
         </p>
-
-        <div className="mb-6 rounded-lg border border-violet-200 bg-violet-50 px-4 py-3 text-sm text-violet-950">
-          <p className="font-semibold">Dual-lane tools (v2)</p>
-          <ul className="mt-2 list-disc space-y-1 pl-5">
-            <li>
-              <code>save_timeline_memory</code> / <code>get_timeline</code> — life/work capture only
-            </li>
-            <li>
-              <code>save_agent_context</code> / <code>get_agent_context</code> — AI chat by tab title
-            </li>
-            <li>
-              <code>get_daily_focus</code> / <code>get_goals</code> — what to do now, and the active goal
-            </li>
-            <li>
-              <code>get_context</code> — pass <code>objective</code> so the pack is for this goal, not a generic dump
-            </li>
-            <li>
-              <code>get_content_ideas</code> — lessons from work that are worth posting
-            </li>
-            <li>
-              Legacy names (<code>save_memory</code>, <code>timeline</code>) still work as deprecated aliases
-            </li>
-          </ul>
-        </div>
+        <McpGrantEditor />
 
         <p className="text-slate-600 mb-4">
           <strong>Claude.ai</strong> uses OAuth (each user signs in — no shared user id).{' '}
@@ -696,9 +672,16 @@ export default function SettingsForms({
         </p>
 
         <CodeBlock
-          title="Claude Desktop / Cursor MCP JSON"
+          title="Claude Desktop MCP JSON"
           value={mcpConfigJson}
           copyKey="claude"
+          copiedKey={copiedKey}
+          onCopy={copyText}
+        />
+        <CodeBlock
+          title="Cursor MCP JSON"
+          value={cursorMcpJson}
+          copyKey="cursor"
           copiedKey={copiedKey}
           onCopy={copyText}
         />

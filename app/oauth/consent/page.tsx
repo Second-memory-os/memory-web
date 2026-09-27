@@ -4,6 +4,7 @@ import { oauthIssuer } from '@/lib/oauth/config';
 import { OAuthError } from '@/lib/oauth/clients';
 import { parseAuthorizeParams, validateAuthorizeRequest } from '@/lib/oauth/store';
 import ConsentForm from './ConsentForm';
+import { DEFAULT_GRANTS, resolveClientKey } from '@/lib/mcp-capabilities';
 
 export const dynamic = 'force-dynamic';
 
@@ -57,8 +58,8 @@ export default async function OauthConsentPage({ searchParams }: Props) {
         ) : (
           <>
             <p className="mt-4 text-sm text-slate-700">
-              <strong>{clientName}</strong> wants to access your MemoryOS tools (timeline, search,
-              context) for this account only.
+              <strong>{clientName}</strong> can read only the lanes you leave checked. It cannot browse
+              your whole memory or another AI&apos;s chats.
             </p>
             <p className="mt-2 break-all rounded-lg bg-slate-100 px-3 py-2 font-mono text-xs text-slate-700">
               {resource}
@@ -76,6 +77,8 @@ export default async function OauthConsentPage({ searchParams }: Props) {
               codeChallengeMethod={params.code_challenge_method || 'S256'}
               scope={params.scope || 'mcp:tools'}
               resource={resource}
+              clientKey={resolveClientKey(clientName, params.client_id)}
+              granted={DEFAULT_GRANTS[resolveClientKey(clientName, params.client_id)]}
             />
           </>
         )}
