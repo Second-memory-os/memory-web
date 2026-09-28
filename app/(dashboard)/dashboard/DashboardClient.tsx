@@ -540,13 +540,11 @@ export default function DashboardClient({
                 ? 'Nothing should move today.'
                 : todayItems[0]?.text}
             </p>
-            {todayItems.length > 0 ? (
+            {todayItems.length > 1 ? (
               <ol className="mt-6 border-y border-[var(--mkt-line)]">
-                {todayItems.map((item, index) => (
+                {todayItems.slice(1).map((item, index) => (
                   <li key={item.id} className="flex items-baseline justify-between gap-6 border-b border-[var(--mkt-line)] py-3 text-sm last:border-b-0">
-                    <span>
-                      {index + 1}. {item.text}
-                    </span>
+                    <span>{item.text}</span>
                     <span className={item.reason === 'overdue' || item.reason === 'due-today' ? 'text-[var(--mkt-accent)]' : 'text-[var(--mkt-muted)]'}>
                       {itemDetail(item)}
                     </span>
